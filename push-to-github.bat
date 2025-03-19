@@ -14,4 +14,7 @@
 "C:\Program Files\Git\cmd\git.exe" add public/*.html
 "C:\Program Files\Git\cmd\git.exe" commit -m "Update email address to cst@seamlessms.net"
 "C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/ticket-submission.html public/js/ticket-submission.js public/css/style.css
+"C:\Program Files\Git\cmd\git.exe" commit -m "Update ticket submission form with new fields and service icons"
+"C:\Program Files\Git\cmd\git.exe" push
 pause 

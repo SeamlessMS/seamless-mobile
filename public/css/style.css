@@ -430,4 +430,53 @@ footer i {
 .rebrand-button {
     -webkit-tap-highlight-color: #007bff;
     touch-action: manipulation;
+}
+
+/* Service Type Icons */
+.service-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.form-select option {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+}
+
+.form-select option img {
+    margin-right: 8px;
+}
+
+/* Ticket Form Styles */
+.ticket-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-primary {
+    padding: 0.5rem 2rem;
+    font-weight: 500;
 } 

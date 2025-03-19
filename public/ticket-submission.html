@@ -3,224 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seamless Mobile Services - Submit Ticket</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .ticket-form {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            border: 1px solid #dee2e6;
-        }
-        .progress-bar {
-            height: 5px;
-            background-color: #e9ecef;
-            margin-bottom: 2rem;
-        }
-        .progress {
-            height: 100%;
-            background-color: #0d6efd;
-            width: 0;
-            transition: width 0.3s ease;
-        }
-        .form-section {
-            display: none;
-        }
-        .form-section.active {
-            display: block;
-        }
-        .nav-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-        }
-        .knowledge-base {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 5px;
-        }
-        .faq-item {
-            margin-bottom: 1rem;
-            cursor: pointer;
-        }
-        .faq-item:hover {
-            color: #0d6efd;
-        }
-    </style>
+    <title>Submit Support Ticket - Seamless Mobile Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="ticket-form">
-            <h2 class="text-center mb-4">Submit Support Ticket</h2>
-            
-            <!-- Progress Bar -->
-            <div class="progress-bar">
-                <div class="progress" id="progress"></div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="images/logo.png" alt="Seamless Mobile Services" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
             </div>
+        </div>
+    </nav>
 
-            <!-- Step 1: Basic Information -->
-            <div class="form-section active" id="step1">
-                <h4>Basic Information</h4>
-                <div class="mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="fullName" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Account Name</label>
-                    <input type="text" class="form-control" id="accountName" required>
-                    <div class="form-text">Please enter your company or account name as it appears on your bill.</div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="phone">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Preferred Contact Method</label>
-                    <select class="form-select" id="contactMethod">
-                        <option value="email">Email</option>
-                        <option value="phone">Phone</option>
-                        <option value="both">Both</option>
-                    </select>
-                </div>
-            </div>
+    <!-- Ticket Submission Form -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Submit Support Ticket</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="ticketForm">
+                            <!-- Basic Information -->
+                            <h5 class="mb-3">Basic Information</h5>
+                            <div class="mb-4">
+                                <div class="mb-3">
+                                    <label for="employeeName" class="form-label">Employee Name</label>
+                                    <input type="text" class="form-control" id="employeeName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" required>
+                                </div>
+                            </div>
 
-            <!-- Step 2: Service Details -->
-            <div class="form-section" id="step2">
-                <h4>Service Details</h4>
-                <div class="mb-3">
-                    <label class="form-label">Account Number</label>
-                    <input type="text" class="form-control" id="accountNumber">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Service Type</label>
-                    <select class="form-select" id="serviceType">
-                        <option value="voip">VoIP Service</option>
-                        <option value="mobile">Mobile Service</option>
-                        <option value="internet">Internet Service</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Number of Users Affected</label>
-                    <input type="number" class="form-control" id="usersAffected" min="1">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Business Hours</label>
-                    <input type="text" class="form-control" id="businessHours" placeholder="e.g., 9 AM - 5 PM EST">
-                </div>
-            </div>
+                            <!-- Service Details -->
+                            <h5 class="mb-3">Service Details</h5>
+                            <div class="mb-4">
+                                <div class="mb-3">
+                                    <label for="serviceType" class="form-label">Service Type</label>
+                                    <select class="form-select" id="serviceType" required>
+                                        <option value="">Select a service type</option>
+                                        <option value="apple">
+                                            <img src="images/apple-logo.png" alt="Apple" class="service-icon">
+                                            Apple
+                                        </option>
+                                        <option value="android">
+                                            <img src="images/android-logo.png" alt="Android" class="service-icon">
+                                            Android
+                                        </option>
+                                        <option value="verizon">
+                                            <img src="images/verizon-logo.png" alt="Verizon" class="service-icon">
+                                            Verizon
+                                        </option>
+                                        <option value="att">
+                                            <img src="images/att-logo.png" alt="AT&T" class="service-icon">
+                                            AT&T
+                                        </option>
+                                        <option value="tmobile">
+                                            <img src="images/tmobile-logo.png" alt="T-Mobile" class="service-icon">
+                                            T-Mobile
+                                        </option>
+                                        <option value="voip">
+                                            <img src="images/voip-logo.png" alt="VoIP" class="service-icon">
+                                            VoIP
+                                        </option>
+                                        <option value="other">
+                                            <img src="images/other-logo.png" alt="Other" class="service-icon">
+                                            Other
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="followUpContact" class="form-label">Follow Up Contact Name</label>
+                                    <input type="text" class="form-control" id="followUpContact" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="issueDescription" class="form-label">Issue Description</label>
+                                    <textarea class="form-control" id="issueDescription" rows="4" required></textarea>
+                                </div>
+                            </div>
 
-            <!-- Step 3: Issue Details -->
-            <div class="form-section" id="step3">
-                <h4>Issue Details</h4>
-                <div class="mb-3">
-                    <label class="form-label">Issue Category</label>
-                    <select class="form-select" id="issueCategory">
-                        <option value="technical">Technical Issue</option>
-                        <option value="billing">Billing Issue</option>
-                        <option value="service">Service Issue</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Priority Level</label>
-                    <select class="form-select" id="priority">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Issue Description</label>
-                    <textarea class="form-control" id="description" rows="5" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Attachments</label>
-                    <input type="file" class="form-control" id="attachments" multiple>
-                </div>
-            </div>
+                            <!-- Additional Information -->
+                            <h5 class="mb-3">Additional Information</h5>
+                            <div class="mb-4">
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Priority Level</label>
+                                    <select class="form-select" id="priority" required>
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="attachments" class="form-label">Attachments (Optional)</label>
+                                    <input type="file" class="form-control" id="attachments" multiple>
+                                </div>
+                            </div>
 
-            <!-- Navigation Buttons -->
-            <div class="nav-buttons">
-                <button class="btn btn-secondary" id="prevBtn" style="display: none;">Previous</button>
-                <button class="btn btn-primary" id="nextBtn">Next</button>
-                <button class="btn btn-success" id="submitBtn" style="display: none;">Submit Ticket</button>
-            </div>
-
-            <!-- Knowledge Base Section -->
-            <div class="knowledge-base">
-                <h4>Common Solutions</h4>
-                <div class="faq-item" onclick="toggleFAQ(this)">
-                    <i class="fas fa-chevron-right"></i> How do I reset my VoIP device?
-                </div>
-                <div class="faq-item" onclick="toggleFAQ(this)">
-                    <i class="fas fa-chevron-right"></i> What should I do if I can't make outbound calls?
-                </div>
-                <div class="faq-item" onclick="toggleFAQ(this)">
-                    <i class="fas fa-chevron-right"></i> How do I check my service status?
+                            <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Form Navigation
-        const sections = document.querySelectorAll('.form-section');
-        const progress = document.getElementById('progress');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        let currentSection = 0;
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> (720) 488-7700</li>
+                        <li><i class="fas fa-envelope"></i> cst@seamlessms.net</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Greenwood Village, CO</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white">Home</a></li>
+                        <li><a href="services.html" class="text-white">Services</a></li>
+                        <li><a href="about.html" class="text-white">About</a></li>
+                        <li><a href="contact.html" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 Seamless Mobile Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
-        function updateProgress() {
-            const progressWidth = ((currentSection + 1) / sections.length) * 100;
-            progress.style.width = `${progressWidth}%`;
-        }
-
-        function showSection(index) {
-            sections.forEach(section => section.classList.remove('active'));
-            sections[index].classList.add('active');
-            updateProgress();
-
-            prevBtn.style.display = index === 0 ? 'none' : 'block';
-            nextBtn.style.display = index === sections.length - 1 ? 'none' : 'block';
-            submitBtn.style.display = index === sections.length - 1 ? 'block' : 'none';
-        }
-
-        nextBtn.addEventListener('click', () => {
-            if (currentSection < sections.length - 1) {
-                currentSection++;
-                showSection(currentSection);
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentSection > 0) {
-                currentSection--;
-                showSection(currentSection);
-            }
-        });
-
-        // FAQ Toggle
-        function toggleFAQ(element) {
-            const icon = element.querySelector('i');
-            icon.style.transform = icon.style.transform === 'rotate(90deg)' ? 'rotate(0deg)' : 'rotate(90deg)';
-        }
-
-        // Form Submission
-        submitBtn.addEventListener('click', () => {
-            // Add your form submission logic here
-            alert('Ticket submitted successfully!');
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/ticket-submission.js"></script>
 </body>
 </html> 
