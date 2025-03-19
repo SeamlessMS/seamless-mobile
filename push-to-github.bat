@@ -9,6 +9,9 @@
 "C:\Program Files\Git\cmd\git.exe" commit -m "Optimize popup for mobile devices"
 "C:\Program Files\Git\cmd\git.exe" push
 "C:\Program Files\Git\cmd\git.exe" add public/*.html
+"C:\Program Files\Git\cmd\git.exe" commit -m "Update location to Greenwood Village, CO"
+"C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/*.html
 "C:\Program Files\Git\cmd\git.exe" commit -m "Update email address to cst@seamlessms.net"
 "C:\Program Files\Git\cmd\git.exe" push
 pause 
