@@ -17,4 +17,7 @@
 "C:\Program Files\Git\cmd\git.exe" add public/ticket-submission.html public/js/ticket-submission.js public/css/style.css
 "C:\Program Files\Git\cmd\git.exe" commit -m "Update ticket submission form with new fields and service icons"
 "C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/about.html
+"C:\Program Files\Git\cmd\git.exe" commit -m "Remove leadership team section from about page"
+"C:\Program Files\Git\cmd\git.exe" push
 pause 
