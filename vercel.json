@@ -2,49 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "scripts/ticket-api.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "scripts/auth-api.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "scripts/payment-api.js",
-      "use": "@vercel/node"
+      "src": "public/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/tickets/(.*)",
-      "dest": "scripts/ticket-api.js"
-    },
-    {
-      "src": "/api/auth/(.*)",
-      "dest": "scripts/auth-api.js"
-    },
-    {
-      "src": "/api/payment/(.*)",
-      "dest": "scripts/payment-api.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/public/$1"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "ZOHO_CLIENT_ID": "@zoho_client_id",
-    "ZOHO_CLIENT_SECRET": "@zoho_client_secret",
-    "ZOHO_REFRESH_TOKEN": "@zoho_refresh_token",
-    "ZOHO_ORG_ID": "@zoho_org_id",
-    "STRIPE_SECRET_KEY": "@stripe_secret_key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
-    "JWT_SECRET": "@jwt_secret",
-    "EMAIL_HOST": "@email_host",
-    "EMAIL_PORT": "@email_port",
-    "EMAIL_USER": "@email_user",
-    "EMAIL_PASSWORD": "@email_password",
-    "EMAIL_FROM": "@email_from"
-  }
+  ]
 } 
