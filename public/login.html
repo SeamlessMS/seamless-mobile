@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Seamless Mobile Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/dark-mode.css" rel="stylesheet">
+    <!-- Temporarily disabled reCAPTCHA -->
+    <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+    <style>
+        .login-container {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #1a237e;
+            box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
+        }
+        /* Temporarily disabled reCAPTCHA styles */
+        /*
+        .g-recaptcha {
+            margin-bottom: 1rem;
+        }
+        */
+        .forgot-password {
+            color: #1a237e;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .forgot-password:hover {
+            color: #0d47a1;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-header h2 {
+            color: #1a237e;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Seamless Mobile Services</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="payment.html">Pay Bill</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <section class="login-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="login-card p-4">
+                        <div class="login-header">
+                            <h2>Welcome Back</h2>
+                            <p>Please sign in to access your account</p>
+                        </div>
+                        <form id="login-form">
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Temporarily disabled reCAPTCHA -->
+                            <!-- <div class="mb-4">
+                                <div class="g-recaptcha" data-sitekey="your_recaptcha_site_key"></div>
+                            </div> -->
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </button>
+
+                            <div class="text-center">
+                                <a href="#" class="forgot-password" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                                    <i class="fas fa-key me-1"></i>Forgot Password?
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Password Reset Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reset-password-form">
+                        <div class="mb-3">
+                            <label for="reset-email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="reset-email" required>
+                            </div>
+                        </div>
+                        <!-- Temporarily disabled reCAPTCHA -->
+                        <!-- <div class="mb-3">
+                            <div class="g-recaptcha" data-sitekey="your_recaptcha_site_key"></div>
+                        </div> -->
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Seamless Mobile Services</h5>
+                    <p>Your trusted partner in enterprise mobility and technology management.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="services.html" class="text-white">Services</a></li>
+                        <li><a href="about.html" class="text-white">About Us</a></li>
+                        <li><a href="contact.html" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> (303) 642-6337</li>
+                        <li><i class="fas fa-envelope"></i> support@seamlessms.net</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Denver, CO</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 Seamless Mobile Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/dark-mode.js"></script>
+    <script>
+        // Handle login form submission
+        const form = document.getElementById('login-form');
+        const resetForm = document.getElementById('reset-password-form');
+        const resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Temporarily disabled reCAPTCHA verification
+            /*
+            const captchaResponse = grecaptcha.getResponse();
+            if (!captchaResponse) {
+                alert('Please complete the CAPTCHA');
+                return;
+            }
+            */
+
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                // captcha: captchaResponse
+            };
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    window.location.href = '/dashboard.html';
+                } else {
+                    throw new Error('Login failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Login failed. Please try again.');
+            }
+        });
+
+        // Handle password reset form submission
+        resetForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Temporarily disabled reCAPTCHA verification
+            /*
+            const captchaResponse = grecaptcha.getResponse();
+            if (!captchaResponse) {
+                alert('Please complete the CAPTCHA');
+                return;
+            }
+            */
+
+            const formData = {
+                email: document.getElementById('reset-email').value,
+                // captcha: captchaResponse
+            };
+
+            try {
+                const response = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Password reset instructions have been sent to your email.');
+                    resetModal.hide();
+                    resetForm.reset();
+                } else {
+                    throw new Error('Failed to send reset instructions');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send reset instructions. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html> 

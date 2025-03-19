@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Seamless Mobile Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/dark-mode.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Seamless Mobile Services</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="payment.html">Pay Bill</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contact Header -->
+    <header class="bg-primary text-white text-center py-5">
+        <div class="container">
+            <h1>Get Started Today</h1>
+            <p class="lead">Tell us about your business needs and we'll help you optimize your mobility solutions</p>
+        </div>
+    </header>
+
+    <!-- Contact Form -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <form id="contact-form">
+                                <!-- Business Information -->
+                                <div class="mb-4">
+                                    <h4>Business Information</h4>
+                                    <div class="mb-3">
+                                        <label for="business-name" class="form-label">Business Name</label>
+                                        <input type="text" class="form-control" id="business-name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="business-address" class="form-label">Business Address</label>
+                                        <textarea class="form-control" id="business-address" rows="3" required></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="mb-4">
+                                    <h4>Contact Information</h4>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="contact-name" class="form-label">Contact Name</label>
+                                            <input type="text" class="form-control" id="contact-name" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="contact-title" class="form-label">Title</label>
+                                            <input type="text" class="form-control" id="contact-title" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="contact-email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="contact-email" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="contact-phone" class="form-label">Phone</label>
+                                            <input type="tel" class="form-control" id="contact-phone" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Current Services -->
+                                <div class="mb-4">
+                                    <h4>Current Services</h4>
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Carriers</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="verizon">
+                                            <label class="form-check-label" for="verizon">Verizon</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="att">
+                                            <label class="form-check-label" for="att">AT&T</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="tmobile">
+                                            <label class="form-check-label" for="tmobile">T-Mobile</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="phone-lines" class="form-label">Number of Phone Lines</label>
+                                        <input type="number" class="form-control" id="phone-lines" min="1" required>
+                                    </div>
+                                </div>
+
+                                <!-- Business Needs -->
+                                <div class="mb-4">
+                                    <h4>Business Needs</h4>
+                                    <div class="mb-3">
+                                        <label for="current-issues" class="form-label">Current Issues or Challenges</label>
+                                        <textarea class="form-control" id="current-issues" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="goals" class="form-label">Business Goals</label>
+                                        <textarea class="form-control" id="goals" rows="3"></textarea>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Request
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thank You!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                    <h4>We've Received Your Request</h4>
+                    <p>Our team will review your information and contact you within 24 hours to discuss your needs.</p>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Seamless Mobile Services</h5>
+                    <p>Your trusted partner in enterprise mobility and technology management.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="services.html" class="text-white">Services</a></li>
+                        <li><a href="about.html" class="text-white">About Us</a></li>
+                        <li><a href="contact.html" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-phone"></i> (303) 642-6337</li>
+                        <li><i class="fas fa-envelope"></i> support@seamlessms.net</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Denver, CO</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 Seamless Mobile Services. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/dark-mode.js"></script>
+    <script>
+        // Handle form submission
+        const form = document.getElementById('contact-form');
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Collect form data
+            const formData = {
+                businessName: document.getElementById('business-name').value,
+                businessAddress: document.getElementById('business-address').value,
+                contactName: document.getElementById('contact-name').value,
+                contactTitle: document.getElementById('contact-title').value,
+                contactEmail: document.getElementById('contact-email').value,
+                contactPhone: document.getElementById('contact-phone').value,
+                carriers: {
+                    verizon: document.getElementById('verizon').checked,
+                    att: document.getElementById('att').checked,
+                    tmobile: document.getElementById('tmobile').checked
+                },
+                phoneLines: document.getElementById('phone-lines').value,
+                currentIssues: document.getElementById('current-issues').value,
+                goals: document.getElementById('goals').value
+            };
+
+            try {
+                // Send data to server
+                const response = await fetch('/api/contact/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    // Show success modal
+                    successModal.show();
+                    form.reset();
+                } else {
+                    throw new Error('Failed to submit form');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html> 
