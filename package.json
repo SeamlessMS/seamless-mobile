@@ -14,7 +14,8 @@
     "setup-domain": "node scripts/setup-domain.js",
     "setup-git": "node scripts/setup-git.js",
     "push-github": "node scripts/push-to-github.js",
-    "configure-git": "node scripts/configure-git.js"
+    "configure-git": "node scripts/configure-git.js",
+    "git": "node scripts/git-cli.js"
   },
   "dependencies": {
     "express": "^4.18.2",
