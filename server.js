@@ -55,10 +55,25 @@ async function getAccessTokenFromRefreshToken() {
     params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE');
 
     try {
+        // Check if environment variables are set
+        if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
+            throw new Error('Missing Zoho credentials. Please check environment variables.');
+        }
+
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
         return response.data;
     } catch (error) {
         console.error('Error getting access token:', error.response?.data || error.message);
+        
+        // Handle specific OAuth errors
+        if (error.response?.data?.error === 'invalid_code') {
+            throw new Error('Invalid refresh token. Please generate a new one.');
+        } else if (error.response?.data?.error === 'invalid_client') {
+            throw new Error('Invalid client credentials. Please check client ID and secret.');
+        } else if (error.response?.status === 401) {
+            throw new Error('OAuth token is invalid or expired. Please check your Zoho credentials.');
+        }
+        
         throw error;
     }
 }

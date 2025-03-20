@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to submit ticket');
+                throw new Error(errorData.message || errorData.error || 'Failed to submit ticket');
             }
             
             const result = await response.json();
@@ -67,13 +67,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Ticket submitted successfully! We will contact you shortly.');
                 ticketForm.reset();
             } else {
-                // Show error message
+                // Show error message with more details
                 console.error('Server error:', result.error);
-                alert(`Failed to submit ticket: ${result.message}\n\nPlease try again or contact support at cst@seamlessms.net`);
+                const errorMessage = result.message || 'An unknown error occurred';
+                const contactInfo = '\n\nIf this issue persists, please contact support at cst@seamlessms.net';
+                alert(`Failed to submit ticket: ${errorMessage}${contactInfo}`);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert(error.message || 'Failed to submit ticket. Please try again or contact support at cst@seamlessms.net');
+            const errorMessage = error.message || 'Failed to submit ticket';
+            const contactInfo = '\n\nIf this issue persists, please contact support at cst@seamlessms.net';
+            alert(`${errorMessage}${contactInfo}`);
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
