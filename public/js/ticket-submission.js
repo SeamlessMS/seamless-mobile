@@ -49,10 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/api/submit-ticket', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formData)
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to submit ticket');
+            }
             
             const result = await response.json();
             

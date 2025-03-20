@@ -7,9 +7,7 @@ const path = require('path');
 const app = express();
 
 // Middleware
-app.use(cors({
-    origin: ['https://www.seamlessms.net', 'http://localhost:3000']
-}));
+app.use(cors());  // Allow all origins during development
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -132,19 +130,29 @@ ${data.issueDescription}`,
     }
 }
 
-// Endpoint to handle ticket submission
+// API endpoints
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 app.post('/api/submit-ticket', async (req, res) => {
     try {
         console.log('Received ticket submission:', req.body);
         
         // Basic validation
         if (!req.body.employeeName || !req.body.email || !req.body.phone || !req.body.serviceType || !req.body.issueDescription) {
-            throw new Error('Please fill in all required fields');
+            return res.status(400).json({
+                success: false,
+                message: 'Please fill in all required fields'
+            });
         }
 
         // Email validation
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email)) {
-            throw new Error('Please enter a valid email address');
+            return res.status(400).json({
+                success: false,
+                message: 'Please enter a valid email address'
+            });
         }
 
         // Get access token
