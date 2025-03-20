@@ -8,7 +8,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: 'https://www.seamlessms.net'
+    origin: ['https://www.seamlessms.net', 'http://localhost:3000']
 }));
 app.use(express.json());
 app.use(express.static('public'));
@@ -30,6 +30,24 @@ const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
 const ZOHO_DESK_URL = 'https://desk.zoho.com';
 
+// Serve static files
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
+
+app.get('/services', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'services.html'));
+});
+
+app.get('/ticket-submission', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ticket-submission.html'));
+});
+
+// Zoho Desk API functions
 async function getAccessTokenFromRefreshToken() {
     const params = new URLSearchParams();
     params.append('refresh_token', ZOHO_REFRESH_TOKEN);
@@ -47,20 +65,30 @@ async function getAccessTokenFromRefreshToken() {
     }
 }
 
-async function createContact(accessToken, contactData) {
+async function createContact(data, accessToken) {
     try {
-        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/contacts`, {
-            firstName: contactData.firstName,
-            lastName: contactData.lastName,
-            email: contactData.email,
-            phone: contactData.phone,
-            description: `Subject: ${contactData.subject}\n\n${contactData.description}`
-        }, {
+        console.log('Creating contact with data:', data);
+        // Extract name parts
+        const nameParts = data.employeeName.trim().split(' ');
+        const firstName = nameParts[0] || 'Unknown';
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'User';
+
+        const contactData = {
+            lastName: lastName,
+            firstName: firstName,
+            email: data.email,
+            phone: data.phone
+        };
+
+        console.log('Sending contact data:', contactData);
+
+        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/contacts`, contactData, {
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'Content-Type': 'application/json'
             }
         });
+        console.log('Contact creation response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating contact:', error.response?.data || error.message);
@@ -68,23 +96,35 @@ async function createContact(accessToken, contactData) {
     }
 }
 
-async function createTicket(accessToken, contactId, ticketData) {
+async function createTicket(data, contactId, accessToken) {
     try {
-        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, {
-            subject: ticketData.subject,
-            description: ticketData.description,
+        const ticketData = {
+            subject: `Support Request - ${data.serviceType}`,
+            description: `
+Employee Name: ${data.employeeName}
+Email: ${data.email}
+Phone: ${data.phone}
+Service Type: ${data.serviceType}
+Follow-up Contact: ${data.followUpContact}
+
+Issue Description:
+${data.issueDescription}`,
+            departmentId: process.env.ZOHO_DEPARTMENT_ID,
             contactId: contactId,
-            departmentId: ticketData.departmentId,
-            category: ticketData.category,
-            priority: ticketData.priority || 'Medium',
+            priority: data.priority,
             status: 'Open',
             channel: 'Web'
-        }, {
+        };
+
+        console.log('Sending ticket data:', ticketData);
+
+        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, ticketData, {
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'Content-Type': 'application/json'
             }
         });
+        console.log('Ticket creation response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating ticket:', error.response?.data || error.message);
@@ -95,37 +135,49 @@ async function createTicket(accessToken, contactId, ticketData) {
 // Endpoint to handle ticket submission
 app.post('/api/submit-ticket', async (req, res) => {
     try {
-        const formData = req.body;
+        console.log('Received ticket submission:', req.body);
         
+        // Basic validation
+        if (!req.body.employeeName || !req.body.email || !req.body.phone || !req.body.serviceType || !req.body.issueDescription) {
+            throw new Error('Please fill in all required fields');
+        }
+
+        // Email validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email)) {
+            throw new Error('Please enter a valid email address');
+        }
+
         // Get access token
         const tokenResponse = await getAccessTokenFromRefreshToken();
+        console.log('Got access token:', tokenResponse.access_token);
         
         // Create contact
-        const contact = await createContact(
-            tokenResponse.access_token,
-            formData
-        );
+        const contactResponse = await createContact(req.body, tokenResponse.access_token);
+        console.log('Created contact:', contactResponse);
         
         // Create ticket
-        const ticket = await createTicket(
-            tokenResponse.access_token,
-            contact.id,
-            formData
-        );
+        const ticketResponse = await createTicket(req.body, contactResponse.id, tokenResponse.access_token);
+        console.log('Created ticket:', ticketResponse);
         
-        res.json({
-            success: true,
-            message: 'Ticket created successfully',
-            ticketId: ticket.id
-        });
+        res.json({ success: true, ticketId: ticketResponse.id });
     } catch (error) {
-        console.error('Error processing ticket submission:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to create ticket',
-            error: error.message
+        console.error('Error in ticket submission:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: error.response?.data?.message || error.message || 'Failed to submit ticket',
+            error: error.response?.data || error.message
         });
     }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Something went wrong!',
+        error: err.message
+    });
 });
 
 const PORT = process.env.PORT || 3000;

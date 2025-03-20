@@ -8,13 +8,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add icons to service type options
     for (let option of serviceOptions) {
-        const icon = document.createElement('img');
-        icon.src = `images/${option.value}-logo.png`;
-        icon.alt = option.text;
-        icon.className = 'service-icon me-2';
-        icon.style.width = '20px';
-        icon.style.height = '20px';
-        option.insertBefore(icon, option.firstChild);
+        if (option.value) {  // Only add icons to non-empty options
+            const icon = document.createElement('img');
+            icon.src = `images/${option.value.toLowerCase()}-logo.png`;
+            icon.alt = option.text;
+            icon.className = 'service-icon me-2';
+            icon.style.width = '20px';
+            icon.style.height = '20px';
+            option.insertBefore(icon, option.firstChild);
+        }
     }
 
     ticketForm.addEventListener('submit', async function(e) {
@@ -27,23 +29,21 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Get form data
             const formData = {
-                subject: `Support Ticket - ${document.getElementById('serviceType').value}`,
-                description: `
-Employee Name: ${document.getElementById('employeeName').value}
-Email: ${document.getElementById('email').value}
-Phone: ${document.getElementById('phone').value}
-Service Type: ${document.getElementById('serviceType').value}
-Follow-up Contact: ${document.getElementById('followUpContact').value}
-Priority: ${document.getElementById('priority').value}
-
-Issue Description:
-${document.getElementById('issueDescription').value}
-                `,
-                departmentId: '1097773000000006907',
-                channel: 'Web',
-                priority: document.getElementById('priority').value,
-                status: 'Open'
+                employeeName: document.getElementById('employeeName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                serviceType: document.getElementById('serviceType').value,
+                followUpContact: document.getElementById('followUpContact').value,
+                issueDescription: document.getElementById('issueDescription').value,
+                priority: document.getElementById('priority').value
             };
+            
+            // Validate required fields
+            if (!formData.employeeName || !formData.email || !formData.phone || !formData.serviceType || !formData.issueDescription) {
+                throw new Error('Please fill in all required fields');
+            }
+            
+            console.log('Submitting form data:', formData);
             
             // Send data to server
             const response = await fetch('/api/submit-ticket', {
@@ -61,14 +61,13 @@ ${document.getElementById('issueDescription').value}
                 alert('Ticket submitted successfully! We will contact you shortly.');
                 ticketForm.reset();
             } else {
-                // Show detailed error message
-                const errorMessage = result.error || 'Failed to submit ticket';
-                console.error('Server error:', errorMessage);
-                alert(`Failed to submit ticket: ${errorMessage}\n\nPlease try again or contact support at cst@seamlessms.net`);
+                // Show error message
+                console.error('Server error:', result.error);
+                alert(`Failed to submit ticket: ${result.message}\n\nPlease try again or contact support at cst@seamlessms.net`);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to submit ticket. Please try again or contact support at cst@seamlessms.net');
+            alert(error.message || 'Failed to submit ticket. Please try again or contact support at cst@seamlessms.net');
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
