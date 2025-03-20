@@ -47,6 +47,11 @@ app.get('/ticket-submission', (req, res) => {
 
 // Zoho Desk API functions
 async function getAccessTokenFromRefreshToken() {
+    console.log('Starting OAuth token refresh...');
+    console.log('Client ID exists:', !!ZOHO_CLIENT_ID);
+    console.log('Client Secret exists:', !!ZOHO_CLIENT_SECRET);
+    console.log('Refresh Token exists:', !!ZOHO_REFRESH_TOKEN);
+
     const params = new URLSearchParams();
     params.append('refresh_token', ZOHO_REFRESH_TOKEN);
     params.append('client_id', ZOHO_CLIENT_ID);
@@ -57,21 +62,33 @@ async function getAccessTokenFromRefreshToken() {
     try {
         // Check if environment variables are set
         if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
+            console.error('Missing required Zoho credentials:',
+                !ZOHO_CLIENT_ID ? 'Client ID is missing' : '',
+                !ZOHO_CLIENT_SECRET ? 'Client Secret is missing' : '',
+                !ZOHO_REFRESH_TOKEN ? 'Refresh Token is missing' : ''
+            );
             throw new Error('Missing Zoho credentials. Please check environment variables.');
         }
 
+        console.log('Requesting new access token...');
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
+        console.log('Token refresh successful');
         return response.data;
     } catch (error) {
-        console.error('Error getting access token:', error.response?.data || error.message);
+        console.error('Detailed error in getting access token:', {
+            status: error.response?.status,
+            statusText: error.response?.statusText,
+            data: error.response?.data,
+            message: error.message
+        });
         
         // Handle specific OAuth errors
         if (error.response?.data?.error === 'invalid_code') {
-            throw new Error('Invalid refresh token. Please generate a new one.');
+            throw new Error('Invalid refresh token. Please generate a new one from Zoho API Console.');
         } else if (error.response?.data?.error === 'invalid_client') {
-            throw new Error('Invalid client credentials. Please check client ID and secret.');
+            throw new Error('Invalid client credentials. Please check client ID and secret in Vercel environment variables.');
         } else if (error.response?.status === 401) {
-            throw new Error('OAuth token is invalid or expired. Please check your Zoho credentials.');
+            throw new Error('OAuth token is invalid or expired. Please generate a new refresh token from Zoho API Console.');
         }
         
         throw error;
