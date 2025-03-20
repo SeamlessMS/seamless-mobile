@@ -69,31 +69,58 @@ async function getAccessTokenFromRefreshToken() {
     }
 
     try {
+        console.log('Environment variables present:');
+        console.log('- ZOHO_CLIENT_ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set');
+        console.log('- ZOHO_CLIENT_SECRET:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set');
+        console.log('- ZOHO_REFRESH_TOKEN:', process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set');
+        console.log('- ZOHO_DEPARTMENT_ID:', process.env.ZOHO_DEPARTMENT_ID ? 'Set' : 'Not set');
+
         const params = new URLSearchParams();
         params.append('refresh_token', process.env.ZOHO_REFRESH_TOKEN);
         params.append('client_id', process.env.ZOHO_CLIENT_ID);
         params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
         params.append('grant_type', 'refresh_token');
 
-        console.log('Making OAuth request with:');
-        console.log('- Client ID:', process.env.ZOHO_CLIENT_ID);
-        console.log('- Refresh Token:', process.env.ZOHO_REFRESH_TOKEN.substring(0, 10) + '...');
+        console.log('Making OAuth request to:', 'https://accounts.zoho.com/oauth/v2/token');
+        console.log('Request parameters:', {
+            refresh_token: process.env.ZOHO_REFRESH_TOKEN.substring(0, 10) + '...',
+            client_id: process.env.ZOHO_CLIENT_ID,
+            grant_type: 'refresh_token'
+        });
 
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
         
-        if (!response.data || !response.data.access_token) {
+        console.log('Zoho OAuth response:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: response.data
+        });
+
+        if (!response.data) {
+            throw new Error('No response data received from Zoho');
+        }
+
+        if (!response.data.access_token) {
             console.error('Invalid response from Zoho:', response.data);
-            throw new Error('Zoho did not return an access token');
+            throw new Error('Access token not found in Zoho response: ' + JSON.stringify(response.data));
         }
         
         return response.data;
     } catch (error) {
-        // Log the full error for debugging
         console.error('Detailed OAuth Error:', {
             message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-            headers: error.response?.headers
+            response: {
+                data: error.response?.data,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                headers: error.response?.headers
+            },
+            config: {
+                url: error.config?.url,
+                method: error.config?.method,
+                headers: error.config?.headers,
+                data: error.config?.data
+            }
         });
 
         // Handle specific error cases
