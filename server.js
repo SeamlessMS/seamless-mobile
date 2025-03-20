@@ -224,7 +224,9 @@ app.post('/api/submit-ticket', async (req, res) => {
         }
 
         // Get access token
+        console.log('Getting access token...');
         const tokenData = await getAccessTokenFromRefreshToken();
+        console.log('Access token received:', tokenData.access_token ? '✓' : '✗');
         const accessToken = tokenData.access_token;
 
         // Split name into first and last name
@@ -250,30 +252,28 @@ app.post('/api/submit-ticket', async (req, res) => {
                 }
             }
         );
-
-        console.log('Contact created:', contactResponse.data);
+        console.log('Contact created:', contactResponse.data.id);
 
         // Create ticket
         console.log('Creating ticket...');
         const ticketResponse = await axios.post(
             `${ZOHO_DESK_URL}/api/v1/tickets`,
             {
-                departmentId: ZOHO_DEPARTMENT_ID,
-                contactId: contactResponse.data.id,
-                subject: `Support Request - ${req.body.serviceType || 'General'}`,
+                subject: `Support Request - ${req.body.serviceType}`,
                 description: `
 Employee Name: ${req.body.employeeName}
 Email: ${req.body.email}
 Phone: ${req.body.phone || 'Not provided'}
-Service Type: ${req.body.serviceType || 'Not specified'}
+Service Type: ${req.body.serviceType}
 Follow-up Contact: ${req.body.followUpContact || 'Not provided'}
 
 Issue Description:
 ${req.body.issueDescription}`,
+                departmentId: ZOHO_DEPARTMENT_ID,
+                contactId: contactResponse.data.id,
                 priority: req.body.priority || 'Medium',
                 status: 'Open',
-                channel: 'Web',
-                classification: 'Request'
+                channel: 'Web'
             },
             {
                 headers: {
@@ -283,8 +283,7 @@ ${req.body.issueDescription}`,
                 }
             }
         );
-
-        console.log('Ticket created:', ticketResponse.data);
+        console.log('Ticket created:', ticketResponse.data.id);
 
         res.json({
             success: true,
@@ -293,14 +292,16 @@ ${req.body.issueDescription}`,
         });
 
     } catch (error) {
-        console.error('Error in ticket submission:', error);
-        
-        // Check for specific error types
-        if (error.response?.data) {
-            console.error('API Error Response:', error.response.data);
-        }
+        console.error('Detailed error in ticket submission:', {
+            message: error.message,
+            response: {
+                data: error.response?.data,
+                status: error.response?.status,
+                statusText: error.response?.statusText
+            },
+            stack: error.stack
+        });
 
-        // Send appropriate error response
         res.status(500).json({
             success: false,
             message: 'Failed to create ticket: ' + (error.response?.data?.message || error.message)
