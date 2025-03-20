@@ -245,7 +245,7 @@ app.post('/api/submit-ticket', async (req, res) => {
             {
                 headers: {
                     'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_DEPARTMENT_ID,
+                    'orgId': ZOHO_ORG_ID,
                     'Content-Type': 'application/json'
                 }
             }
@@ -258,7 +258,7 @@ app.post('/api/submit-ticket', async (req, res) => {
         const ticketResponse = await axios.post(
             `${ZOHO_DESK_URL}/api/v1/tickets`,
             {
-                departmentId: process.env.ZOHO_DEPARTMENT_ID,
+                departmentId: ZOHO_DEPARTMENT_ID,
                 contactId: contactResponse.data.id,
                 subject: `Support Request - ${req.body.serviceType || 'General'}`,
                 description: `
@@ -278,7 +278,7 @@ ${req.body.issueDescription}`,
             {
                 headers: {
                     'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_DEPARTMENT_ID,
+                    'orgId': ZOHO_ORG_ID,
                     'Content-Type': 'application/json'
                 }
             }
