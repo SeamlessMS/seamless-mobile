@@ -183,6 +183,8 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/submit-ticket', async (req, res) => {
     try {
+        console.log('Received ticket submission:', req.body);
+
         // Validate required fields
         if (!req.body.name || !req.body.email || !req.body.description) {
             return res.status(400).json({
@@ -195,23 +197,34 @@ app.post('/api/submit-ticket', async (req, res) => {
         const tokenData = await getAccessTokenFromRefreshToken();
         const accessToken = tokenData.access_token;
 
+        // Split name into first and last name
+        const nameParts = req.body.name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : req.body.name;
+
         // Create contact
+        console.log('Creating contact...');
         const contactResponse = await axios.post(
             `${ZOHO_DESK_URL}/api/v1/contacts`,
             {
-                lastName: req.body.name,
+                firstName: firstName,
+                lastName: lastName,
                 email: req.body.email,
                 phone: req.body.phone || ''
             },
             {
                 headers: {
                     'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_DEPARTMENT_ID
+                    'orgId': process.env.ZOHO_DEPARTMENT_ID,
+                    'Content-Type': 'application/json'
                 }
             }
         );
 
+        console.log('Contact created:', contactResponse.data);
+
         // Create ticket
+        console.log('Creating ticket...');
         const ticketResponse = await axios.post(
             `${ZOHO_DESK_URL}/api/v1/tickets`,
             {
@@ -221,15 +234,19 @@ app.post('/api/submit-ticket', async (req, res) => {
                 description: req.body.description,
                 priority: req.body.priority || 'Medium',
                 status: 'Open',
-                channel: 'Web'
+                channel: 'Web',
+                classification: 'Request'
             },
             {
                 headers: {
                     'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_DEPARTMENT_ID
+                    'orgId': process.env.ZOHO_DEPARTMENT_ID,
+                    'Content-Type': 'application/json'
                 }
             }
         );
+
+        console.log('Ticket created:', ticketResponse.data);
 
         res.json({
             success: true,
@@ -240,14 +257,28 @@ app.post('/api/submit-ticket', async (req, res) => {
         console.error('Ticket Creation Error:', {
             message: error.message,
             response: error.response?.data,
-            status: error.response?.status
+            status: error.response?.status,
+            stack: error.stack
         });
 
-        // Send a more specific error message
-        res.status(error.response?.status || 500).json({
+        // Handle specific error cases
+        if (error.response?.status === 401) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication failed. Please try again.'
+            });
+        }
+
+        if (error.response?.data?.message) {
+            return res.status(error.response.status || 500).json({
+                success: false,
+                message: error.response.data.message
+            });
+        }
+
+        res.status(500).json({
             success: false,
-            message: error.message,
-            details: error.response?.data?.message || 'An error occurred while creating the ticket'
+            message: 'An error occurred while creating the ticket. Please try again.'
         });
     }
 });
