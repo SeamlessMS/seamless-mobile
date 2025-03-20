@@ -186,10 +186,10 @@ app.post('/api/submit-ticket', async (req, res) => {
         console.log('Received ticket submission:', req.body);
 
         // Validate required fields
-        if (!req.body.name || !req.body.email || !req.body.description) {
+        if (!req.body.employeeName || !req.body.email || !req.body.issueDescription) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing required fields: name, email, and description are required'
+                message: 'Missing required fields: employeeName, email, and issueDescription are required'
             });
         }
 
@@ -198,9 +198,9 @@ app.post('/api/submit-ticket', async (req, res) => {
         const accessToken = tokenData.access_token;
 
         // Split name into first and last name
-        const nameParts = req.body.name.trim().split(' ');
+        const nameParts = req.body.employeeName.trim().split(' ');
         const firstName = nameParts[0] || '';
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : req.body.name;
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : req.body.employeeName;
 
         // Create contact
         console.log('Creating contact...');
@@ -230,8 +230,16 @@ app.post('/api/submit-ticket', async (req, res) => {
             {
                 departmentId: process.env.ZOHO_DEPARTMENT_ID,
                 contactId: contactResponse.data.id,
-                subject: req.body.subject || 'New Support Request',
-                description: req.body.description,
+                subject: `Support Request - ${req.body.serviceType || 'General'}`,
+                description: `
+Employee Name: ${req.body.employeeName}
+Email: ${req.body.email}
+Phone: ${req.body.phone || 'Not provided'}
+Service Type: ${req.body.serviceType || 'Not specified'}
+Follow-up Contact: ${req.body.followUpContact || 'Not provided'}
+
+Issue Description:
+${req.body.issueDescription}`,
                 priority: req.body.priority || 'Medium',
                 status: 'Open',
                 channel: 'Web',
@@ -253,32 +261,19 @@ app.post('/api/submit-ticket', async (req, res) => {
             message: 'Ticket created successfully',
             ticketId: ticketResponse.data.id
         });
+
     } catch (error) {
-        console.error('Ticket Creation Error:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-            stack: error.stack
-        });
-
-        // Handle specific error cases
-        if (error.response?.status === 401) {
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication failed. Please try again.'
-            });
+        console.error('Error in ticket submission:', error);
+        
+        // Check for specific error types
+        if (error.response?.data) {
+            console.error('API Error Response:', error.response.data);
         }
 
-        if (error.response?.data?.message) {
-            return res.status(error.response.status || 500).json({
-                success: false,
-                message: error.response.data.message
-            });
-        }
-
+        // Send appropriate error response
         res.status(500).json({
             success: false,
-            message: 'An error occurred while creating the ticket. Please try again.'
+            message: 'Failed to create ticket: ' + (error.response?.data?.message || error.message)
         });
     }
 });
