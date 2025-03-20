@@ -43,15 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Format the data for the server
             const formData = {
-                name: employeeName,  // Server expects 'name'
+                employeeName: employeeName,  // Server expects 'employeeName'
                 email: email,
                 phone: phone,
-                subject: `Support Request - ${serviceType}`,
-                description: `Service Type: ${serviceType}
-Follow-up Contact: ${followUpContact}
-
-Issue Description:
-${issueDescription}`,
+                serviceType: serviceType,
+                followUpContact: followUpContact,
+                issueDescription: issueDescription,
                 priority: priority
             };
             
