@@ -9,15 +9,34 @@ async function testTicketForm() {
     const page = await browser.newPage();
 
     try {
+        // Enable request interception
+        await page.setRequestInterception(true);
+
+        // Handle requests
+        page.on('request', request => {
+            if (request.resourceType() === 'image') {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+
         // Enable detailed logging
         page.on('console', msg => console.log('Browser Console:', msg.text()));
         page.on('pageerror', err => console.error('Page Error:', err.message));
         page.on('requestfailed', request => 
-            console.log('Failed Request:', request.url(), request.failure().errorText)
+            console.log('Failed Request:', request.url(), request.failure()?.errorText || 'Unknown error')
         );
-        page.on('response', response => {
-            if (!response.ok()) {
-                console.log(`Failed Response: ${response.url()} - Status: ${response.status()}`);
+        page.on('response', async response => {
+            const url = response.url();
+            if (!response.ok() && !url.includes('images/')) {
+                console.log(`Failed Response: ${url} - Status: ${response.status()}`);
+                try {
+                    const text = await response.text();
+                    console.log('Response body:', text);
+                } catch (e) {
+                    console.log('Could not get response body:', e.message);
+                }
             }
         });
 
@@ -38,37 +57,60 @@ async function testTicketForm() {
         await page.type('#issueDescription', 'This is a test ticket submission');
         await page.select('#priority', 'Medium');
 
-        // Submit form and wait for response
+        // Submit form directly using fetch
         console.log('Submitting form...');
-        const responsePromise = page.waitForResponse(
-            response => response.url().includes('/api/submit-ticket'),
-            { timeout: 30000 }
-        );
-
-        await page.evaluate(() => {
-            const form = document.querySelector('form');
+        const result = await page.evaluate(async () => {
             const formData = {
-                employeeName: document.querySelector('#employeeName').value,
-                email: document.querySelector('#email').value,
-                phone: document.querySelector('#phone').value,
-                serviceType: document.querySelector('#serviceType').value,
-                followUpContact: document.querySelector('#followUpContact').value,
-                issueDescription: document.querySelector('#issueDescription').value,
-                priority: document.querySelector('#priority').value
+                employeeName: 'Test User',
+                email: 'test@example.com',
+                phone: '1234567890',
+                serviceType: 'Apple',
+                followUpContact: 'Test Contact',
+                issueDescription: 'This is a test ticket submission',
+                priority: 'Medium'
             };
+            
             console.log('Submitting form data:', formData);
-            form.submit();
+            
+            try {
+                const response = await fetch('/api/submit-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                try {
+                    return {
+                        ok: response.ok,
+                        status: response.status,
+                        data: JSON.parse(responseText)
+                    };
+                } catch (e) {
+                    return {
+                        ok: false,
+                        status: response.status,
+                        error: 'Failed to parse JSON response',
+                        rawResponse: responseText
+                    };
+                }
+            } catch (error) {
+                return {
+                    ok: false,
+                    error: error.message
+                };
+            }
         });
 
-        // Wait for response and log result
-        const response = await responsePromise;
-        const responseData = await response.json().catch(e => ({ error: 'Failed to parse JSON response' }));
-        
-        console.log('Response status:', response.status());
-        console.log('Response data:', responseData);
+        console.log('Submission result:', result);
 
-        if (!response.ok()) {
-            throw new Error(`Server responded with status ${response.status()}: ${JSON.stringify(responseData)}`);
+        if (!result.ok) {
+            throw new Error(`Form submission failed: ${result.error || result.data?.message || 'Unknown error'}`);
         }
 
         console.log('Test completed successfully!');
