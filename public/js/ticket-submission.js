@@ -27,25 +27,33 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
         
         try {
-            // Get form data
+            // Get form values
+            const employeeName = document.getElementById('employeeName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const serviceType = document.getElementById('serviceType').value;
+            const followUpContact = document.getElementById('followUpContact').value.trim();
+            const issueDescription = document.getElementById('issueDescription').value.trim();
+            const priority = document.getElementById('priority').value;
+
+            // Validate required fields
+            if (!employeeName || !email || !issueDescription) {
+                throw new Error('Please fill in all required fields: Employee Name, Email, and Issue Description');
+            }
+
+            // Format the data for the server
             const formData = {
-                name: document.getElementById('employeeName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                subject: `Support Request - ${document.getElementById('serviceType').value}`,
-                description: `
-Service Type: ${document.getElementById('serviceType').value}
-Follow-up Contact: ${document.getElementById('followUpContact').value}
+                name: employeeName,  // Server expects 'name'
+                email: email,
+                phone: phone,
+                subject: `Support Request - ${serviceType}`,
+                description: `Service Type: ${serviceType}
+Follow-up Contact: ${followUpContact}
 
 Issue Description:
-${document.getElementById('issueDescription').value}`,
-                priority: document.getElementById('priority').value
+${issueDescription}`,
+                priority: priority
             };
-            
-            // Validate required fields
-            if (!formData.name || !formData.email || !formData.description) {
-                throw new Error('Please fill in all required fields');
-            }
             
             console.log('Submitting form data:', formData);
             
@@ -59,29 +67,22 @@ ${document.getElementById('issueDescription').value}`,
                 body: JSON.stringify(formData)
             });
             
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || errorData.error || 'Failed to submit ticket');
-            }
-            
             const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.message || result.error || 'Failed to submit ticket');
+            }
             
             if (result.success) {
                 // Show success message
                 alert('Ticket submitted successfully! We will contact you shortly.');
                 ticketForm.reset();
             } else {
-                // Show error message with more details
-                console.error('Server error:', result.error);
-                const errorMessage = result.message || 'An unknown error occurred';
-                const contactInfo = '\n\nIf this issue persists, please contact support at cst@seamlessms.net';
-                alert(`Failed to submit ticket: ${errorMessage}${contactInfo}`);
+                throw new Error(result.message || 'Failed to submit ticket');
             }
         } catch (error) {
             console.error('Error:', error);
-            const errorMessage = error.message || 'Failed to submit ticket';
-            const contactInfo = '\n\nIf this issue persists, please contact support at cst@seamlessms.net';
-            alert(`${errorMessage}${contactInfo}`);
+            alert(error.message + '\n\nIf this issue persists, please contact support at cst@seamlessms.net');
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
