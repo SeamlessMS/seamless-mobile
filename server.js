@@ -27,6 +27,16 @@ const ZOHO_CLIENT_ID = process.env.ZOHO_CLIENT_ID;
 const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
 const ZOHO_DESK_URL = 'https://desk.zoho.com';
+const ZOHO_DEPARTMENT_ID = process.env.ZOHO_DEPARTMENT_ID;
+
+// Add at the top after imports
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
 
 // Serve static files
 app.get('/', (req, res) => {
@@ -47,50 +57,32 @@ app.get('/ticket-submission', (req, res) => {
 
 // Zoho Desk API functions
 async function getAccessTokenFromRefreshToken() {
-    console.log('Starting OAuth token refresh...');
-    console.log('Client ID exists:', !!ZOHO_CLIENT_ID);
-    console.log('Client Secret exists:', !!ZOHO_CLIENT_SECRET);
-    console.log('Refresh Token exists:', !!ZOHO_REFRESH_TOKEN);
+    console.log('Starting OAuth token refresh process...');
+    console.log('Environment variables check:');
+    console.log('- Client ID exists:', !!ZOHO_CLIENT_ID);
+    console.log('- Client Secret exists:', !!ZOHO_CLIENT_SECRET);
+    console.log('- Refresh Token exists:', !!ZOHO_REFRESH_TOKEN);
+    console.log('- Department ID exists:', !!ZOHO_DEPARTMENT_ID);
 
     const params = new URLSearchParams();
     params.append('refresh_token', ZOHO_REFRESH_TOKEN);
     params.append('client_id', ZOHO_CLIENT_ID);
     params.append('client_secret', ZOHO_CLIENT_SECRET);
     params.append('grant_type', 'refresh_token');
-    params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE');
+    params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE,Desk.basic.READ');
 
     try {
-        // Check if environment variables are set
-        if (!ZOHO_REFRESH_TOKEN || !ZOHO_CLIENT_ID || !ZOHO_CLIENT_SECRET) {
-            console.error('Missing required Zoho credentials:',
-                !ZOHO_CLIENT_ID ? 'Client ID is missing' : '',
-                !ZOHO_CLIENT_SECRET ? 'Client Secret is missing' : '',
-                !ZOHO_REFRESH_TOKEN ? 'Refresh Token is missing' : ''
-            );
-            throw new Error('Missing Zoho credentials. Please check environment variables.');
-        }
-
-        console.log('Requesting new access token...');
+        console.log('Making request to Zoho OAuth endpoint...');
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
-        console.log('Token refresh successful');
+        console.log('OAuth token refresh successful:', response.data);
         return response.data;
     } catch (error) {
-        console.error('Detailed error in getting access token:', {
+        console.error('OAuth Error Details:', {
             status: error.response?.status,
             statusText: error.response?.statusText,
             data: error.response?.data,
             message: error.message
         });
-        
-        // Handle specific OAuth errors
-        if (error.response?.data?.error === 'invalid_code') {
-            throw new Error('Invalid refresh token. Please generate a new one from Zoho API Console.');
-        } else if (error.response?.data?.error === 'invalid_client') {
-            throw new Error('Invalid client credentials. Please check client ID and secret in Vercel environment variables.');
-        } else if (error.response?.status === 401) {
-            throw new Error('OAuth token is invalid or expired. Please generate a new refresh token from Zoho API Console.');
-        }
-        
         throw error;
     }
 }
@@ -223,4 +215,10 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log('Environment check:');
+    console.log('- NODE_ENV:', process.env.NODE_ENV);
+    console.log('- Client ID length:', ZOHO_CLIENT_ID?.length);
+    console.log('- Client Secret length:', ZOHO_CLIENT_SECRET?.length);
+    console.log('- Refresh Token length:', ZOHO_REFRESH_TOKEN?.length);
+    console.log('- Department ID:', ZOHO_DEPARTMENT_ID);
 }); 
