@@ -7,7 +7,9 @@ const path = require('path');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'https://www.seamlessms.net'
+}));
 app.use(express.json());
 app.use(express.static('public'));
 
@@ -23,63 +25,105 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Zoho Desk API configuration
-const ZOHO_ORG_ID = process.env.ZOHO_ORG_ID;
 const ZOHO_CLIENT_ID = process.env.ZOHO_CLIENT_ID;
 const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
+const ZOHO_DESK_URL = 'https://desk.zoho.com';
 
-// Function to get Zoho access token
-async function getZohoAccessToken() {
+async function getAccessTokenFromRefreshToken() {
+    const params = new URLSearchParams();
+    params.append('refresh_token', ZOHO_REFRESH_TOKEN);
+    params.append('client_id', ZOHO_CLIENT_ID);
+    params.append('client_secret', ZOHO_CLIENT_SECRET);
+    params.append('grant_type', 'refresh_token');
+    params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE');
+
     try {
-        const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', null, {
-            params: {
-                refresh_token: ZOHO_REFRESH_TOKEN,
-                client_id: ZOHO_CLIENT_ID,
-                client_secret: ZOHO_CLIENT_SECRET,
-                grant_type: 'refresh_token'
-            }
-        });
-        return response.data.access_token;
+        const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
+        return response.data;
     } catch (error) {
-        console.error('Error getting Zoho access token:', error);
+        console.error('Error getting access token:', error.response?.data || error.message);
         throw error;
     }
 }
 
-// Ticket submission endpoint
+async function createContact(accessToken, contactData) {
+    try {
+        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/contacts`, {
+            firstName: contactData.firstName,
+            lastName: contactData.lastName,
+            email: contactData.email,
+            phone: contactData.phone,
+            description: `Subject: ${contactData.subject}\n\n${contactData.description}`
+        }, {
+            headers: {
+                'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error creating contact:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+async function createTicket(accessToken, contactId, ticketData) {
+    try {
+        const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, {
+            subject: ticketData.subject,
+            description: ticketData.description,
+            contactId: contactId,
+            departmentId: ticketData.departmentId,
+            category: ticketData.category,
+            priority: ticketData.priority || 'Medium',
+            status: 'Open',
+            channel: 'Web'
+        }, {
+            headers: {
+                'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error creating ticket:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+// Endpoint to handle ticket submission
 app.post('/api/submit-ticket', async (req, res) => {
     try {
-        console.log('Received ticket submission:', req.body);
-        const accessToken = await getZohoAccessToken();
-        console.log('Got access token');
+        const formData = req.body;
         
-        // Create ticket in Zoho Desk
-        const response = await axios.post(
-            'https://desk.zoho.com/api/v1/tickets',
-            req.body,
-            {
-                headers: {
-                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_ORG_ID,
-                    'Content-Type': 'application/json'
-                }
-            }
+        // Get access token
+        const tokenResponse = await getAccessTokenFromRefreshToken();
+        
+        // Create contact
+        const contact = await createContact(
+            tokenResponse.access_token,
+            formData
         );
-
-        console.log('Ticket created successfully:', response.data);
-        res.json({ success: true, ticketId: response.data.id });
-    } catch (error) {
-        console.error('Error submitting ticket:', error.response?.data || error.message);
-        console.error('Error details:', {
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message
-        });
         
-        res.status(500).json({ 
-            success: false, 
-            error: error.response?.data?.message || error.message,
-            details: error.response?.data
+        // Create ticket
+        const ticket = await createTicket(
+            tokenResponse.access_token,
+            contact.id,
+            formData
+        );
+        
+        res.json({
+            success: true,
+            message: 'Ticket created successfully',
+            ticketId: ticket.id
+        });
+    } catch (error) {
+        console.error('Error processing ticket submission:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to create ticket',
+            error: error.message
         });
     }
 });
