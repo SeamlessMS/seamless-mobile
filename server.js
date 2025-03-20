@@ -49,7 +49,9 @@ async function getZohoAccessToken() {
 // Ticket submission endpoint
 app.post('/api/submit-ticket', async (req, res) => {
     try {
+        console.log('Received ticket submission:', req.body);
         const accessToken = await getZohoAccessToken();
+        console.log('Got access token');
         
         // Create ticket in Zoho Desk
         const response = await axios.post(
@@ -68,9 +70,16 @@ app.post('/api/submit-ticket', async (req, res) => {
         res.json({ success: true, ticketId: response.data.id });
     } catch (error) {
         console.error('Error submitting ticket:', error.response?.data || error.message);
+        console.error('Error details:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        
         res.status(500).json({ 
             success: false, 
-            error: error.response?.data?.message || error.message 
+            error: error.response?.data?.message || error.message,
+            details: error.response?.data
         });
     }
 });

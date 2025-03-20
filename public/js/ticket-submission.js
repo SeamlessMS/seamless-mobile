@@ -61,11 +61,14 @@ ${document.getElementById('issueDescription').value}
                 alert('Ticket submitted successfully! We will contact you shortly.');
                 ticketForm.reset();
             } else {
-                throw new Error(result.error || 'Failed to submit ticket');
+                // Show detailed error message
+                const errorMessage = result.error || 'Failed to submit ticket';
+                console.error('Server error:', errorMessage);
+                alert(`Failed to submit ticket: ${errorMessage}\n\nPlease try again or contact support at cst@seamlessms.net`);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Failed to submit ticket. Please try again or contact support.');
+            alert('Failed to submit ticket. Please try again or contact support at cst@seamlessms.net');
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
