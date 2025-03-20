@@ -29,17 +29,21 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Get form data
             const formData = {
-                employeeName: document.getElementById('employeeName').value,
+                name: document.getElementById('employeeName').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value,
-                serviceType: document.getElementById('serviceType').value,
-                followUpContact: document.getElementById('followUpContact').value,
-                issueDescription: document.getElementById('issueDescription').value,
+                subject: `Support Request - ${document.getElementById('serviceType').value}`,
+                description: `
+Service Type: ${document.getElementById('serviceType').value}
+Follow-up Contact: ${document.getElementById('followUpContact').value}
+
+Issue Description:
+${document.getElementById('issueDescription').value}`,
                 priority: document.getElementById('priority').value
             };
             
             // Validate required fields
-            if (!formData.employeeName || !formData.email || !formData.phone || !formData.serviceType || !formData.issueDescription) {
+            if (!formData.name || !formData.email || !formData.description) {
                 throw new Error('Please fill in all required fields');
             }
             
