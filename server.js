@@ -57,33 +57,28 @@ app.get('/ticket-submission', (req, res) => {
 
 // Zoho Desk API functions
 async function getAccessTokenFromRefreshToken() {
-    console.log('Starting OAuth token refresh process...');
-    console.log('Environment variables check:');
-    console.log('- Client ID exists:', !!ZOHO_CLIENT_ID);
-    console.log('- Client Secret exists:', !!ZOHO_CLIENT_SECRET);
-    console.log('- Refresh Token exists:', !!ZOHO_REFRESH_TOKEN);
-    console.log('- Department ID exists:', !!ZOHO_DEPARTMENT_ID);
-
-    const params = new URLSearchParams();
-    params.append('refresh_token', ZOHO_REFRESH_TOKEN);
-    params.append('client_id', ZOHO_CLIENT_ID);
-    params.append('client_secret', ZOHO_CLIENT_SECRET);
-    params.append('grant_type', 'refresh_token');
-    params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE,Desk.basic.READ');
-
     try {
-        console.log('Making request to Zoho OAuth endpoint...');
+        const params = new URLSearchParams();
+        params.append('refresh_token', process.env.ZOHO_REFRESH_TOKEN);
+        params.append('client_id', process.env.ZOHO_CLIENT_ID);
+        params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
+        params.append('grant_type', 'refresh_token');
+        params.append('scope', 'Desk.tickets.CREATE,Desk.contacts.CREATE,Desk.basic.READ');
+
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
-        console.log('OAuth token refresh successful:', response.data);
+        
+        if (!response.data || !response.data.access_token) {
+            throw new Error('Failed to get access token from Zoho');
+        }
+        
         return response.data;
     } catch (error) {
-        console.error('OAuth Error Details:', {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            data: error.response?.data,
-            message: error.message
+        console.error('OAuth Error:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
         });
-        throw error;
+        throw new Error('Failed to authenticate with Zoho: ' + (error.response?.data?.error || error.message));
     }
 }
 
@@ -161,43 +156,64 @@ app.get('/api/health', (req, res) => {
 
 app.post('/api/submit-ticket', async (req, res) => {
     try {
-        console.log('Received ticket submission:', req.body);
-        
-        // Basic validation
-        if (!req.body.employeeName || !req.body.email || !req.body.phone || !req.body.serviceType || !req.body.issueDescription) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please fill in all required fields'
-            });
+        const tokenData = await getAccessTokenFromRefreshToken();
+        if (!tokenData || !tokenData.access_token) {
+            throw new Error('Failed to get valid access token');
         }
 
-        // Email validation
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please enter a valid email address'
-            });
-        }
+        const accessToken = tokenData.access_token;
+        
+        // Create contact first
+        const contactResponse = await axios.post(
+            `${ZOHO_DESK_URL}/api/v1/contacts`,
+            {
+                lastName: req.body.name || 'Unknown',
+                email: req.body.email,
+                phone: req.body.phone
+            },
+            {
+                headers: {
+                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                    'orgId': ZOHO_DEPARTMENT_ID
+                }
+            }
+        );
 
-        // Get access token
-        const tokenResponse = await getAccessTokenFromRefreshToken();
-        console.log('Got access token:', tokenResponse.access_token);
-        
-        // Create contact
-        const contactResponse = await createContact(req.body, tokenResponse.access_token);
-        console.log('Created contact:', contactResponse);
-        
-        // Create ticket
-        const ticketResponse = await createTicket(req.body, contactResponse.id, tokenResponse.access_token);
-        console.log('Created ticket:', ticketResponse);
-        
-        res.json({ success: true, ticketId: ticketResponse.id });
+        // Then create ticket
+        const ticketResponse = await axios.post(
+            `${ZOHO_DESK_URL}/api/v1/tickets`,
+            {
+                departmentId: ZOHO_DEPARTMENT_ID,
+                contactId: contactResponse.data.id,
+                subject: req.body.subject || 'New Support Request',
+                description: req.body.description,
+                priority: req.body.priority || 'Medium',
+                status: 'Open',
+                channel: 'Web'
+            },
+            {
+                headers: {
+                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                    'orgId': ZOHO_DEPARTMENT_ID
+                }
+            }
+        );
+
+        res.json({ 
+            success: true, 
+            message: 'Ticket created successfully',
+            ticketId: ticketResponse.data.id
+        });
     } catch (error) {
-        console.error('Error in ticket submission:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.response?.data?.message || error.message || 'Failed to submit ticket',
-            error: error.response?.data || error.message
+        console.error('Ticket submission error:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+        });
+        
+        res.status(error.response?.status || 500).json({
+            success: false,
+            message: 'Failed to create ticket: ' + (error.response?.data?.message || error.message)
         });
     }
 });

@@ -1,4 +1,3 @@
 @echo off
-echo Starting server...
-start "Seamless Mobile Server" cmd /c "node server.js"
+start /B node server.js > server.log 2>&1
 echo Server started! Visit http://localhost:3000/ticket-submission to test the form. 
