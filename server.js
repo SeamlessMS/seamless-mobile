@@ -217,7 +217,7 @@ app.post('/api/submit-ticket', async (req, res) => {
     try {
         console.log('Received ticket submission:', req.body);
 
-        // Validate required fields
+        // Validate required fields from the form
         if (!req.body.employeeName || !req.body.email || !req.body.issueDescription) {
             return res.status(400).json({
                 success: false,
@@ -231,12 +231,12 @@ app.post('/api/submit-ticket', async (req, res) => {
         console.log('Access token received:', tokenData.access_token ? '✓' : '✗');
         const accessToken = tokenData.access_token;
 
-        // Split name into first and last name
+        // Split name into first and last name for Zoho contact
         const nameParts = req.body.employeeName.trim().split(' ');
         const firstName = nameParts[0] || '';
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : req.body.employeeName;
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-        // Create contact
+        // Create contact in Zoho
         console.log('Creating contact...');
         const contactResponse = await axios.post(
             `${ZOHO_DESK_URL}/api/v1/contacts`,
@@ -256,13 +256,10 @@ app.post('/api/submit-ticket', async (req, res) => {
         );
         console.log('Contact created:', contactResponse.data.id);
 
-        // Create ticket
-        console.log('Creating ticket...');
-        const ticketResponse = await axios.post(
-            `${ZOHO_DESK_URL}/api/v1/tickets`,
-            {
-                subject: `Support Request - ${req.body.serviceType}`,
-                description: `
+        // Format ticket description
+        const ticketDescription = `
+Support Ticket Details:
+--------------------
 Employee Name: ${req.body.employeeName}
 Email: ${req.body.email}
 Phone: ${req.body.phone || 'Not provided'}
@@ -270,12 +267,28 @@ Service Type: ${req.body.serviceType}
 Follow-up Contact: ${req.body.followUpContact || 'Not provided'}
 
 Issue Description:
-${req.body.issueDescription}`,
+----------------
+${req.body.issueDescription}`;
+
+        // Create ticket in Zoho
+        console.log('Creating ticket...');
+        const ticketResponse = await axios.post(
+            `${ZOHO_DESK_URL}/api/v1/tickets`,
+            {
+                subject: `${req.body.serviceType} Support Request - ${req.body.employeeName}`,
+                description: ticketDescription,
                 departmentId: ZOHO_DEPARTMENT_ID,
                 contactId: contactResponse.data.id,
                 priority: req.body.priority || 'Medium',
                 status: 'Open',
-                channel: 'Web'
+                channel: 'Web',
+                category: req.body.serviceType,
+                email: req.body.email,
+                phone: req.body.phone || '',
+                customFields: {
+                    cf_employee_name: req.body.employeeName,
+                    cf_follow_up_contact: req.body.followUpContact || ''
+                }
             },
             {
                 headers: {
@@ -290,7 +303,8 @@ ${req.body.issueDescription}`,
         res.json({
             success: true,
             message: 'Ticket created successfully',
-            ticketId: ticketResponse.data.id
+            ticketId: ticketResponse.data.id,
+            ticketNumber: ticketResponse.data.ticketNumber
         });
 
     } catch (error) {
