@@ -28,7 +28,7 @@ const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
 const ZOHO_DESK_URL = 'https://desk.zoho.com';
 const ZOHO_DEPARTMENT_ID = process.env.ZOHO_DEPARTMENT_ID;
-const ZOHO_ORG_ID = 'troutmobile';  // Your organization ID
+const ZOHO_ORG_ID = process.env.ZOHO_ORG_ID;
 
 // Add at the top after imports
 process.on('unhandledRejection', (reason, promise) => {
@@ -153,6 +153,7 @@ async function createContact(data, accessToken) {
         };
 
         console.log('Sending contact data:', contactData);
+        console.log('Using org ID:', ZOHO_ORG_ID);
 
         const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/contacts`, contactData, {
             headers: {
@@ -190,6 +191,7 @@ ${data.issueDescription}`,
         };
 
         console.log('Sending ticket data:', ticketData);
+        console.log('Using org ID:', ZOHO_ORG_ID);
 
         const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, ticketData, {
             headers: {
