@@ -28,7 +28,7 @@ const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
 const ZOHO_DESK_URL = 'https://desk.zoho.com';
 const ZOHO_DEPARTMENT_ID = process.env.ZOHO_DEPARTMENT_ID;
-const ZOHO_ORG_ID = process.env.ZOHO_ORG_ID;
+const ZOHO_ORG_ID = 'troutmobile';  // This should be your organization's subdomain
 
 // Add at the top after imports
 process.on('unhandledRejection', (reason, promise) => {
