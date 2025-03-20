@@ -20,4 +20,13 @@
 "C:\Program Files\Git\cmd\git.exe" add public/about.html
 "C:\Program Files\Git\cmd\git.exe" commit -m "Remove leadership team section from about page"
 "C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/services.html public/css/dark-mode.css
+"C:\Program Files\Git\cmd\git.exe" commit -m "Remove dark mode button and related files"
+"C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/*.html
+"C:\Program Files\Git\cmd\git.exe" commit -m "Make navigation consistent across all pages and remove dark mode"
+"C:\Program Files\Git\cmd\git.exe" push
+"C:\Program Files\Git\cmd\git.exe" add public/js/ticket-submission.js server.js
+"C:\Program Files\Git\cmd\git.exe" commit -m "Update ticket submission to work with Zoho Desk"
+"C:\Program Files\Git\cmd\git.exe" push
 pause 
