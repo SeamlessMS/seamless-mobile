@@ -190,39 +190,50 @@ async function createContact(data, accessToken) {
 
 async function createTicket(data, contactId, accessToken) {
     try {
+        // Ensure all required fields are present and properly formatted
         const ticketData = {
-            subject: `${data.serviceType} Support Request - ${data.employeeName}`,
-            description: `Issue Description: ${data.issueDescription}\n\nFollow-up Contact: ${data.followUpContact}`,
-            priority: data.priority,
-            category: data.serviceType,
+            subject: `${data.serviceType || 'General'} Support Request - ${data.employeeName}`.trim(),
+            description: `Issue Description: ${data.issueDescription || 'No description provided'}\n\nFollow-up Contact: ${data.followUpContact || 'None provided'}`.trim(),
+            email: data.email,
             departmentId: ZOHO_DEPARTMENT_ID,
+            contactId: contactId,
+            priority: data.priority || 'Medium',
+            category: data.serviceType || 'General Support', // Ensure this matches a valid Zoho category
             channel: 'Web',
             status: 'Open',
-            email: data.email,
-            contactId: contactId,
-            customFields: [
-                {
-                    value: data.followUpContact,
-                    cf: {
-                        cfName: 'Follow-up Contact'
-                    }
-                },
-                {
-                    value: process.env.NODE_ENV,
-                    cf: {
-                        cfName: 'Environment'
-                    }
-                },
-                {
-                    value: process.env.SERVER_NAME || 'Unknown',
-                    cf: {
-                        cfName: 'Server'
-                    }
-                }
-            ]
+            phone: data.phone || '',
+            customFields: []
         };
 
-        console.log('Creating Zoho ticket with data:', ticketData);
+        // Only add custom fields if they have values
+        if (data.followUpContact) {
+            ticketData.customFields.push({
+                value: data.followUpContact,
+                cf: {
+                    cfName: 'Follow-up Contact'
+                }
+            });
+        }
+
+        if (process.env.NODE_ENV) {
+            ticketData.customFields.push({
+                value: process.env.NODE_ENV,
+                cf: {
+                    cfName: 'Environment'
+                }
+            });
+        }
+
+        if (process.env.SERVER_NAME) {
+            ticketData.customFields.push({
+                value: process.env.SERVER_NAME,
+                cf: {
+                    cfName: 'Server'
+                }
+            });
+        }
+
+        console.log('Creating Zoho ticket with data:', JSON.stringify(ticketData, null, 2));
 
         const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, ticketData, {
             headers: {
@@ -232,17 +243,27 @@ async function createTicket(data, contactId, accessToken) {
             }
         });
 
-        console.log('Created Zoho ticket:', {
-            ticketId: response.data.id,
-            subject: ticketData.subject
+        console.log('Zoho API Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: response.data
         });
 
         return response.data;
     } catch (error) {
-        console.error('Error creating Zoho ticket:', error.message);
-        if (error.response) {
-            console.error('Zoho API error details:', error.response.data);
-            throw new Error(`Failed to create Zoho ticket: ${error.response.data.message || error.message}`);
+        console.error('Error creating Zoho ticket:', {
+            message: error.message,
+            response: error.response?.data,
+            config: {
+                url: error.config?.url,
+                method: error.config?.method,
+                headers: error.config?.headers,
+                data: JSON.parse(error.config?.data || '{}')
+            }
+        });
+        
+        if (error.response?.data) {
+            throw new Error(`Zoho API Error: ${JSON.stringify(error.response.data)}`);
         }
         throw error;
     }
