@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Temporary access token
-const TEMP_ACCESS_TOKEN = '1000.b6d89b8fcc85640e704bdad5dcc6dec3.353b7eddc6bf1b49ba1b0b1dc8254f24';
+const TEMP_ACCESS_TOKEN = '1000.7aedcb48a984121c0272a68dfadee699.09a11247ddc3b825c247d501969df7c4';
 
 async function generateRefreshToken() {
     try {
