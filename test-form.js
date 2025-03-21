@@ -10,10 +10,8 @@ async function testFormSubmission() {
     try {
         const page = await browser.newPage();
         
-        // Enable request interception
+        // Enable request interception to see what's being sent
         await page.setRequestInterception(true);
-        
-        // Log all requests
         page.on('request', request => {
             if (request.url().includes('/api/submit-ticket')) {
                 console.log('\nForm submission details:');
@@ -32,15 +30,20 @@ async function testFormSubmission() {
             console.log('Failed Request:', request.url(), request.failure()?.errorText || 'Unknown error')
         );
         page.on('response', async response => {
-            const url = response.url();
             if (!response.ok()) {
-                console.log(`Failed Response: ${url} - Status: ${response.status()}`);
+                console.log(`Failed Response: ${response.url()} - Status: ${response.status()}`);
                 try {
                     const text = await response.text();
                     console.log('Response body:', text);
                 } catch (e) {
                     console.log('Could not get response body:', e.message);
                 }
+            } else {
+                // Log successful responses too for debugging
+                try {
+                    const text = await response.text();
+                    console.log(`Successful Response from ${response.url()}:`, text);
+                } catch (e) {}
             }
         });
 
@@ -49,40 +52,40 @@ async function testFormSubmission() {
             waitUntil: 'networkidle0',
             timeout: 30000
         });
-        
-        // Wait for form elements to be present
-        await page.waitForSelector('#employeeName');
-        await page.waitForSelector('#email');
-        await page.waitForSelector('#phone');
-        await page.waitForSelector('#serviceType');
-        await page.waitForSelector('#followUpContact');
-        await page.waitForSelector('#issueDescription');
-        await page.waitForSelector('#priority');
-        
-        console.log('Filling out form...');
-        await page.type('#employeeName', 'Test User');
-        await page.type('#email', 'test@example.com');
-        await page.type('#phone', '1234567890');
-        await page.select('#serviceType', 'Apple');
-        await page.type('#followUpContact', 'Test Contact');
-        await page.type('#issueDescription', 'This is a test ticket submission');
-        await page.select('#priority', 'Medium');
 
-        console.log('Submitting form...');
+        console.log('Filling out form...');
         
-        // Get the form data that will be submitted
+        // Fill in the form fields with realistic test data
+        await page.type('#firstName', 'John');  // Using firstName instead of employeeName
+        await page.type('#lastName', 'Smith');  // Added lastName field
+        await page.type('#email', 'test@seamlessms.net');
+        await page.type('#phone', '7204887700'); // Removed hyphens
+        
+        // Select service type - using exact value from dropdown
+        await page.select('#serviceType', 'Technical Support');
+        
+        await page.type('#subject', 'VoIP Service Issues'); // Added subject field
+        await page.type('#description', 'Test ticket submission - VoIP service intermittent connection issues affecting multiple users. Priority support needed.');
+        
+        // Select priority from available options
+        await page.select('#priority', 'High');
+
+        console.log('Form data before submission:');
         const formData = await page.evaluate(() => {
             const form = document.querySelector('form');
-            const formData = new FormData(form);
             const data = {};
-            for (let [key, value] of formData.entries()) {
-                data[key] = value;
+            const elements = form.elements;
+            for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+                if (element.name && element.value) {
+                    data[element.name] = element.value;
+                }
             }
             return data;
         });
-        console.log('Form data being submitted:', formData);
+        console.log(formData);
 
-        // Submit and wait for response
+        console.log('Submitting form...');
         const [response] = await Promise.all([
             page.waitForResponse(response => response.url().includes('/api/submit-ticket')),
             page.click('button[type="submit"]')
@@ -94,6 +97,20 @@ async function testFormSubmission() {
             console.log('Response data:', responseData);
         } catch (error) {
             console.log('Could not read response:', error.message);
+        }
+
+        // Check for success/error messages on the page
+        const successMessage = await page.$('#successMessage');
+        const errorMessage = await page.$('#errorMessage');
+        
+        if (successMessage) {
+            const text = await page.evaluate(el => el.textContent, successMessage);
+            console.log('Success message:', text);
+        }
+        
+        if (errorMessage) {
+            const text = await page.evaluate(el => el.textContent, errorMessage);
+            console.log('Error message:', text);
         }
 
     } catch (error) {

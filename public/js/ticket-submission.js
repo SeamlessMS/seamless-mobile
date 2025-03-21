@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Format the data for the server
             const formData = {
-                employeeName: employeeName,  // Server expects 'employeeName'
+                employeeName: employeeName,
                 email: email,
                 phone: phone,
                 serviceType: serviceType,
@@ -71,8 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (result.success) {
-                // Show success message
-                alert('Ticket submitted successfully! We will contact you shortly.');
+                // Show success message with ticket number
+                const successMessage = `Ticket submitted successfully!\n\nTicket Number: ${result.ticketNumber}\n\nWe will contact you shortly.`;
+                alert(successMessage);
                 ticketForm.reset();
             } else {
                 throw new Error(result.message || 'Failed to submit ticket');

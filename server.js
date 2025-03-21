@@ -6,6 +6,9 @@ const multer = require('multer');
 const path = require('path');
 const app = express();
 
+// Import routes
+const ticketRoutes = require('./server/routes/tickets');
+
 // Middleware
 app.use(cors());  // Allow all origins during development
 app.use(express.json());
@@ -28,7 +31,22 @@ const ZOHO_CLIENT_SECRET = process.env.ZOHO_CLIENT_SECRET;
 const ZOHO_REFRESH_TOKEN = process.env.ZOHO_REFRESH_TOKEN;
 const ZOHO_DESK_URL = 'https://desk.zoho.com';
 const ZOHO_DEPARTMENT_ID = process.env.ZOHO_DEPARTMENT_ID;
-const ZOHO_ORG_ID = 'troutmobile';  // This should be your organization's subdomain
+
+// Extract numeric org ID if URL-style format is provided
+let ZOHO_ORG_ID = process.env.ZOHO_ORG_ID;
+if (ZOHO_ORG_ID) {
+    const match = ZOHO_ORG_ID.match(/\d+/);
+    if (match) {
+        ZOHO_ORG_ID = match[0];
+    }
+}
+
+// Validate required environment variables
+if (!ZOHO_CLIENT_ID) throw new Error('ZOHO_CLIENT_ID environment variable is required');
+if (!ZOHO_CLIENT_SECRET) throw new Error('ZOHO_CLIENT_SECRET environment variable is required');
+if (!ZOHO_REFRESH_TOKEN) throw new Error('ZOHO_REFRESH_TOKEN environment variable is required');
+if (!ZOHO_DEPARTMENT_ID) throw new Error('ZOHO_DEPARTMENT_ID environment variable is required');
+if (!ZOHO_ORG_ID) throw new Error('ZOHO_ORG_ID environment variable is required');
 
 // Add at the top after imports
 process.on('unhandledRejection', (reason, promise) => {
@@ -213,131 +231,22 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-app.post('/api/submit-ticket', async (req, res) => {
-    try {
-        console.log('Received ticket submission:', req.body);
-
-        // Validate required fields from the form
-        if (!req.body.employeeName || !req.body.email || !req.body.issueDescription) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields: employeeName, email, and issueDescription are required'
-            });
-        }
-
-        // Get access token
-        console.log('Getting access token...');
-        const tokenData = await getAccessTokenFromRefreshToken();
-        console.log('Access token received:', tokenData.access_token ? '✓' : '✗');
-        const accessToken = tokenData.access_token;
-
-        // Split name into first and last name for Zoho contact
-        const nameParts = req.body.employeeName.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-
-        // Create contact in Zoho
-        console.log('Creating contact...');
-        const contactResponse = await axios.post(
-            `${ZOHO_DESK_URL}/api/v1/contacts`,
-            {
-                firstName: firstName,
-                lastName: lastName,
-                email: req.body.email,
-                phone: req.body.phone || ''
-            },
-            {
-                headers: {
-                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': ZOHO_ORG_ID,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        console.log('Contact created:', contactResponse.data.id);
-
-        // Format ticket description
-        const ticketDescription = `
-Support Ticket Details:
---------------------
-Employee Name: ${req.body.employeeName}
-Email: ${req.body.email}
-Phone: ${req.body.phone || 'Not provided'}
-Service Type: ${req.body.serviceType}
-Follow-up Contact: ${req.body.followUpContact || 'Not provided'}
-
-Issue Description:
-----------------
-${req.body.issueDescription}`;
-
-        // Create ticket in Zoho
-        console.log('Creating ticket...');
-        const ticketResponse = await axios.post(
-            `${ZOHO_DESK_URL}/api/v1/tickets`,
-            {
-                subject: `${req.body.serviceType} Support Request - ${req.body.employeeName}`,
-                description: ticketDescription,
-                departmentId: ZOHO_DEPARTMENT_ID,
-                contactId: contactResponse.data.id,
-                priority: req.body.priority || 'Medium',
-                status: 'Open',
-                channel: 'Web',
-                category: req.body.serviceType,
-                email: req.body.email,
-                phone: req.body.phone || '',
-                customFields: {
-                    cf_employee_name: req.body.employeeName,
-                    cf_follow_up_contact: req.body.followUpContact || ''
-                }
-            },
-            {
-                headers: {
-                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': ZOHO_ORG_ID,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        console.log('Ticket created:', ticketResponse.data.id);
-
-        res.json({
-            success: true,
-            message: 'Ticket created successfully',
-            ticketId: ticketResponse.data.id,
-            ticketNumber: ticketResponse.data.ticketNumber
-        });
-
-    } catch (error) {
-        console.error('Detailed error in ticket submission:', {
-            message: error.message,
-            response: {
-                data: error.response?.data,
-                status: error.response?.status,
-                statusText: error.response?.statusText
-            },
-            stack: error.stack
-        });
-
-        res.status(500).json({
-            success: false,
-            message: 'Failed to create ticket: ' + (error.response?.data?.message || error.message)
-        });
-    }
-});
+// Use ticket routes
+app.use('/api', ticketRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
         success: false,
-        message: 'Something went wrong!',
+        message: 'Internal Server Error',
         error: err.message
     });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
     console.log('Environment check:');
     console.log('- NODE_ENV:', process.env.NODE_ENV);
     console.log('- Client ID length:', ZOHO_CLIENT_ID?.length);
