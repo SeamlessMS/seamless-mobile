@@ -11,7 +11,8 @@ const ticketRoutes = require('./server/routes/tickets');
 
 // Middleware
 app.use(cors());  // Allow all origins during development
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Parse JSON with size limit
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 app.use(express.static('public'));
 
 // Configure multer for file uploads
@@ -360,6 +361,19 @@ app.use((err, req, res, next) => {
         message: 'Internal Server Error',
         error: err.message
     });
+});
+
+// Error handling for malformed JSON
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Malformed JSON:', err);
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid JSON format',
+      error: 'The request body must be valid JSON'
+    });
+  }
+  next();
 });
 
 const PORT = process.env.PORT || 3000;

@@ -183,6 +183,23 @@ async function createTicket(accessToken, ticketData) {
 // Route to submit a ticket
 router.post('/submit-ticket', async (req, res) => {
   try {
+    // Log the incoming request for debugging
+    console.log('Received ticket submission request:', {
+      headers: req.headers,
+      body: req.body,
+      contentType: req.get('content-type')
+    });
+
+    // Validate request content type
+    const contentType = req.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return res.status(415).json({
+        success: false,
+        message: 'Unsupported Media Type',
+        error: 'Request must be sent with Content-Type: application/json'
+      });
+    }
+
     const {
       employeeName,
       email,
