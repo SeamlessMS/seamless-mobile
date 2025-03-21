@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Temporary access token
-const TEMP_ACCESS_TOKEN = '1000.729a93ad7d1c13e74f0dbf16f17ef8c8.c9b92b878ace40e39c4977e6437d0024';
+const TEMP_ACCESS_TOKEN = '1000.bc4575db9fdf7023549ccad3b2b15956.d6e2f5bda1b864f1ce2c7636c79885cc';
 
 async function generateRefreshToken() {
     try {
@@ -11,11 +11,13 @@ async function generateRefreshToken() {
         params.append('client_id', process.env.ZOHO_CLIENT_ID);
         params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
         params.append('grant_type', 'authorization_code');
+        params.append('scope', 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.READ,Desk.basic.READ');
 
         console.log('Generating refresh token with:', {
             clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
             clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
-            code: TEMP_ACCESS_TOKEN
+            code: TEMP_ACCESS_TOKEN,
+            requestedScopes: 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.READ,Desk.basic.READ'
         });
 
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
@@ -51,75 +53,8 @@ async function generateRefreshToken() {
 if (require.main === module) {
     (async () => {
         try {
-            console.log('Testing existing refresh token...');
-            const refreshToken = '1000.5630d240bfaef37db53a64df48165495.2659c2d6ddb06b8043531090a0248c64';
-            
-            // Use the refresh token to get a new access token
-            const params = new URLSearchParams();
-            params.append('refresh_token', refreshToken);
-            params.append('client_id', process.env.ZOHO_CLIENT_ID);
-            params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
-            params.append('grant_type', 'refresh_token');
-
-            const tokenResponse = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
-
-            console.log('Token response details:', {
-                accessToken: tokenResponse.data.access_token ? 'Received' : 'Missing',
-                refreshToken: tokenResponse.data.refresh_token ? 'Received' : 'Missing',
-                scope: tokenResponse.data.scope,
-                expiresIn: tokenResponse.data.expires_in,
-                apiDomain: tokenResponse.data.api_domain,
-                tokenType: tokenResponse.data.token_type
-            });
-
-            const accessToken = tokenResponse.data.access_token;
-            console.log('New access token generated:', accessToken);
-
-            // Create test contact
-            const contactData = {
-                lastName: 'Test',
-                firstName: 'API',
-                email: 'test@example.com'
-            };
-
-            console.log('Creating test contact...');
-            const contact = await axios.post('https://desk.zoho.com/api/v1/contacts', contactData, {
-                headers: {
-                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_ORG_ID,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            console.log('Test contact created:', contact.data);
-
-            // Create test ticket
-            const ticketData = {
-                subject: 'Test Ticket',
-                description: 'Testing API connection',
-                departmentId: process.env.ZOHO_DEPARTMENT_ID,
-                contactId: contact.data.id,
-                email: 'test@example.com',
-                priority: 'Medium',
-                category: 'General Support',
-                channel: 'Web',
-                status: 'Open'
-            };
-
-            console.log('Creating test ticket with data:', JSON.stringify(ticketData, null, 2));
-            const ticket = await axios.post('https://desk.zoho.com/api/v1/tickets', ticketData, {
-                headers: {
-                    'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                    'orgId': process.env.ZOHO_ORG_ID,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            console.log('Test ticket created successfully:', ticket.data);
+            console.log('Generating refresh token...');
+            await generateRefreshToken();
         } catch (error) {
             console.error('Test failed:', {
                 message: error.message,
