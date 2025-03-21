@@ -70,16 +70,57 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
 // Helper function to create ticket
 async function createTicket(accessToken, ticketData) {
   try {
-    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', JSON.stringify(ticketData), {
+    // Ensure all required fields are present
+    const payload = {
+      subject: ticketData.subject,
+      description: ticketData.description,
+      email: ticketData.email,
+      departmentId: ticketData.departmentId,
+      contactId: ticketData.contactId,
+      priority: ticketData.priority || 'Medium',
+      category: ticketData.category || 'General Support',
+      channel: 'Web',
+      status: 'Open',
+      customFields: []
+    };
+
+    // Add custom fields if they exist
+    if (ticketData.followUpContact) {
+      payload.customFields.push({
+        value: ticketData.followUpContact,
+        cf: {
+          cfName: 'Follow-up Contact'
+        }
+      });
+    }
+
+    console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
+
+    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
         'Content-Type': 'application/json'
       }
     });
+
+    console.log('Ticket created successfully:', {
+      id: response.data.id,
+      ticketNumber: response.data.ticketNumber
+    });
+
     return response.data;
   } catch (error) {
-    console.error('Error creating ticket:', error.response?.data || error.message);
+    console.error('Error creating ticket:', {
+      message: error.message,
+      response: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers,
+        data: JSON.parse(error.config?.data || '{}')
+      }
+    });
     throw error;
   }
 }
@@ -113,7 +154,9 @@ router.post('/submit-ticket', async (req, res) => {
       email: email,
       departmentId: process.env.ZOHO_DEPARTMENT_ID,
       contactId: contact.id,
-      priority: priority
+      priority: priority || 'Medium',
+      category: serviceType || 'General Support',
+      followUpContact: followUpContact
     };
 
     // Create ticket
@@ -126,7 +169,12 @@ router.post('/submit-ticket', async (req, res) => {
       ticketNumber: ticket.ticketNumber
     });
   } catch (error) {
-    console.error('Error submitting ticket:', error);
+    console.error('Error submitting ticket:', {
+      message: error.message,
+      response: error.response?.data,
+      config: error.config
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Failed to submit ticket',
