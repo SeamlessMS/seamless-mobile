@@ -125,10 +125,12 @@ async function createTicket(contactId, ticketData) {
       baseURL: 'https://desk.zoho.com/api/v1',
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'orgId': process.env.ZOHO_ORG_ID
+        'orgId': process.env.ZOHO_ORG_ID,
+        'Content-Type': 'application/json'
       }
     });
 
+    // Create a clean payload with only the required fields
     const payload = {
       contactId: contactId,
       departmentId: process.env.ZOHO_DEPARTMENT_ID,
@@ -142,29 +144,34 @@ async function createTicket(contactId, ticketData) {
         Issue Description: ${ticketData.issueDescription}
       `,
       priority: ticketData.priority || 'Medium',
-      status: 'Open',
-      customFields: [
+      status: 'Open'
+    };
+
+    // Only add custom fields if they exist in Zoho Desk
+    if (process.env.ZOHO_SERVICE_TYPE_FIELD_ID && process.env.ZOHO_FOLLOWUP_FIELD_ID) {
+      payload.customFields = [
         {
-          name: 'Service Type',
+          id: process.env.ZOHO_SERVICE_TYPE_FIELD_ID,
           value: ticketData.serviceType
         },
         {
-          name: 'Follow-up Contact',
+          id: process.env.ZOHO_FOLLOWUP_FIELD_ID,
           value: ticketData.followUpContact
         }
-      ]
-    };
+      ];
+    }
 
-    console.log('Creating ticket with payload:', payload);
-    const response = await axiosInstance.post('/tickets', payload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
+    const response = await axiosInstance.post('/tickets', payload);
     console.log('Ticket created:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error in createTicket:', error);
+    console.error('Error in createTicket:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers
+    });
     throw error;
   }
 }

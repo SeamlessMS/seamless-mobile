@@ -392,13 +392,19 @@ app.use((err, req, res, next) => {
   next();
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log('Environment check:');
-    console.log('- NODE_ENV:', process.env.NODE_ENV);
-    console.log('- Client ID length:', ZOHO_CLIENT_ID?.length);
-    console.log('- Client Secret length:', ZOHO_CLIENT_SECRET?.length);
-    console.log('- Refresh Token length:', ZOHO_REFRESH_TOKEN?.length);
-    console.log('- Department ID:', ZOHO_DEPARTMENT_ID);
-}); 
+// Only start the server if we're not in a serverless environment
+if (process.env.VERCEL_ENV === undefined) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log('Environment variables status:');
+    console.log('ZOHO_CLIENT_ID:', process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set');
+    console.log('ZOHO_CLIENT_SECRET:', process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set');
+    console.log('ZOHO_REFRESH_TOKEN:', process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set');
+    console.log('ZOHO_ORG_ID:', process.env.ZOHO_ORG_ID ? 'Set' : 'Not set');
+    console.log('ZOHO_DEPARTMENT_ID:', process.env.ZOHO_DEPARTMENT_ID ? 'Set' : 'Not set');
+  });
+}
+
+// Export the app for Vercel
+module.exports = app; 
