@@ -168,12 +168,12 @@ async function createTicket(contactId, ticketData) {
 
 // Route to submit a ticket
 router.post('/submit-ticket', async (req, res) => {
+  console.log('Incoming request details:');
+  console.log('Headers:', req.headers);
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Body:', req.body);
+  
   try {
-    console.log('Incoming request details:');
-    console.log('Headers:', req.headers);
-    console.log('Content-Type:', req.get('Content-Type'));
-    console.log('Body:', req.body);
-
     console.log('Processing ticket submission...');
     const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
 
@@ -210,7 +210,6 @@ router.post('/submit-ticket', async (req, res) => {
       ticketId: ticket.id
     });
   } catch (error) {
-    console.error('Error in submit-ticket route:', error);
     console.error('Error details:', {
       message: error.message,
       stack: error.stack,

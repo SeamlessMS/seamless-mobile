@@ -13,25 +13,21 @@ const ticketRoutes = require('./server/routes/tickets');
 app.use(cors());  // Allow all origins during development
 
 // Configure JSON parsing middleware
+app.use(express.json({ limit: '10mb' }));
+
+// Configure URL-encoded body parsing
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Log all requests
 app.use((req, res, next) => {
-  // Log incoming request details
   console.log('=== Incoming Request ===');
   console.log('Method:', req.method);
   console.log('Content-Type:', req.get('Content-Type'));
   console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
   console.log('========================');
-
-  // Parse JSON if content type is application/json or if body is empty
-  if (req.method === 'POST' && 
-      (req.get('Content-Type')?.includes('application/json') || !req.get('Content-Type'))) {
-    express.json()(req, res, next);
-  } else {
-    next();
-  }
+  next();
 });
-
-// Configure URL-encoded body parsing
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(express.static('public'));
 

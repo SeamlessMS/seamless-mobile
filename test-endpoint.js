@@ -104,9 +104,11 @@ async function testTicketSubmission(retryCount = 0, maxRetries = 3) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            validateStatus: function (status) {
-                return status >= 200 && status < 500; // Accept any status code less than 500
-            }
+            transformRequest: [function (data) {
+                return JSON.stringify(data);
+            }],
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         });
 
         console.log('Response:', response.data);
