@@ -191,25 +191,38 @@ async function createContact(data, accessToken) {
 async function createTicket(data, contactId, accessToken) {
     try {
         const ticketData = {
-            subject: `Support Request - ${data.serviceType}`,
-            description: `
-Employee Name: ${data.employeeName}
-Email: ${data.email}
-Phone: ${data.phone}
-Service Type: ${data.serviceType}
-Follow-up Contact: ${data.followUpContact}
-
-Issue Description:
-${data.issueDescription}`,
-            departmentId: ZOHO_DEPARTMENT_ID,
-            contactId: contactId,
+            subject: `${data.serviceType} Support Request - ${data.employeeName}`,
+            description: `Issue Description: ${data.issueDescription}\n\nFollow-up Contact: ${data.followUpContact}`,
             priority: data.priority,
+            category: data.serviceType,
+            departmentId: ZOHO_DEPARTMENT_ID,
+            channel: 'Web',
             status: 'Open',
-            channel: 'Web'
+            email: data.email,
+            contactId: contactId,
+            customFields: [
+                {
+                    value: data.followUpContact,
+                    cf: {
+                        cfName: 'Follow-up Contact'
+                    }
+                },
+                {
+                    value: process.env.NODE_ENV,
+                    cf: {
+                        cfName: 'Environment'
+                    }
+                },
+                {
+                    value: process.env.SERVER_NAME || 'Unknown',
+                    cf: {
+                        cfName: 'Server'
+                    }
+                }
+            ]
         };
 
-        console.log('Sending ticket data:', ticketData);
-        console.log('Using org ID:', ZOHO_ORG_ID);
+        console.log('Creating Zoho ticket with data:', ticketData);
 
         const response = await axios.post(`${ZOHO_DESK_URL}/api/v1/tickets`, ticketData, {
             headers: {
@@ -218,10 +231,19 @@ ${data.issueDescription}`,
                 'Content-Type': 'application/json'
             }
         });
-        console.log('Ticket creation response:', response.data);
+
+        console.log('Created Zoho ticket:', {
+            ticketId: response.data.id,
+            subject: ticketData.subject
+        });
+
         return response.data;
     } catch (error) {
-        console.error('Error creating ticket:', error.response?.data || error.message);
+        console.error('Error creating Zoho ticket:', error.message);
+        if (error.response) {
+            console.error('Zoho API error details:', error.response.data);
+            throw new Error(`Failed to create Zoho ticket: ${error.response.data.message || error.message}`);
+        }
         throw error;
     }
 }
