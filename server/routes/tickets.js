@@ -108,11 +108,7 @@ async function getOrCreateContact(email, contactData) {
     console.log('Created new contact:', createResponse.data);
     return createResponse.data;
   } catch (error) {
-    console.error('Error in getOrCreateContact:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    });
+    console.error('Error in getOrCreateContact:', error);
     throw error;
   }
 }
@@ -148,20 +144,29 @@ async function createTicket(contactId, ticketData) {
         Issue Description: ${ticketData.issueDescription}
       `,
       priority: ticketData.priority || 'Medium',
-      status: 'Open'
+      status: 'Open',
+      customFields: [
+        {
+          name: 'Service Type',
+          value: ticketData.serviceType
+        },
+        {
+          name: 'Follow-up Contact',
+          value: ticketData.followUpContact
+        }
+      ]
     };
 
-    console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
-    const response = await axiosInstance.post('/tickets', payload);
+    console.log('Creating ticket with payload:', payload);
+    const response = await axiosInstance.post('/tickets', payload, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     console.log('Ticket created:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error in createTicket:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      headers: error.response?.headers
-    });
+    console.error('Error in createTicket:', error);
     throw error;
   }
 }
@@ -174,27 +179,14 @@ router.post('/submit-ticket', async (req, res) => {
   console.log('Body:', req.body);
   
   try {
-    // Validate required fields
-    const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
-    
-    if (!employeeName || !email || !issueDescription) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields',
-        error: {
-          errorCode: 'MISSING_FIELDS',
-          message: 'Please provide all required fields: employeeName, email, and issueDescription'
-        }
-      });
-    }
-
     console.log('Processing ticket submission...');
+    const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
 
     // Get or create contact
     const [firstName, lastName] = employeeName.split(' ');
     const contact = await getOrCreateContact(email, {
-      firstName: firstName || 'Unknown',
-      lastName: lastName || 'User',
+      firstName,
+      lastName,
       email,
       phone
     });
@@ -220,8 +212,7 @@ router.post('/submit-ticket', async (req, res) => {
 
     res.json({
       success: true,
-      ticketId: ticket.id,
-      message: 'Ticket created successfully'
+      ticketId: ticket.id
     });
   } catch (error) {
     console.error('Error details:', {
