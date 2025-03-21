@@ -9,7 +9,7 @@ let tokenCache = {
   expiresAt: null
 };
 
-// Helper function to get Zoho access token with caching
+// Get access token function
 async function getAccessToken(retryCount = 0, maxRetries = 3) {
   try {
     // Check if we have a valid cached token
@@ -26,26 +26,12 @@ async function getAccessToken(retryCount = 0, maxRetries = 3) {
     params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
     params.append('grant_type', 'refresh_token');
 
-    console.log('Making OAuth request with:', {
-      clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
-      clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
-      refreshToken: process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set',
-      departmentId: process.env.ZOHO_DEPARTMENT_ID,
-      orgId: process.env.ZOHO_ORG_ID,
-      attempt: retryCount + 1,
-      maxRetries: maxRetries
-    });
-
+    console.log('Getting access token...');
     const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
-
-    if (!response.data || !response.data.access_token) {
-      console.error('Invalid token response:', response.data);
-      throw new Error('Failed to get access token');
-    }
 
     // Cache the token with expiration
     tokenCache = {
@@ -53,22 +39,19 @@ async function getAccessToken(retryCount = 0, maxRetries = 3) {
       expiresAt: Date.now() + (response.data.expires_in * 1000) - 300000 // Expire 5 minutes early
     };
 
-    console.log('Token response:', {
-      accessToken: response.data.access_token ? 'Received' : 'Missing',
+    console.log('Access token response:', {
+      status: response.status,
+      hasAccessToken: !!response.data.access_token,
       scope: response.data.scope,
-      expiresIn: response.data.expires_in,
       expiresAt: new Date(tokenCache.expiresAt).toISOString()
     });
 
     return tokenCache.accessToken;
   } catch (error) {
-    console.error('Token Error:', {
+    console.error('Error getting access token:', {
       message: error.message,
       response: error.response?.data,
-      status: error.response?.status,
-      headers: error.response?.headers,
-      attempt: retryCount + 1,
-      maxRetries: maxRetries
+      status: error.response?.status
     });
 
     // Check if we should retry
@@ -89,16 +72,16 @@ async function getAccessToken(retryCount = 0, maxRetries = 3) {
   }
 }
 
-// Helper function to create or get contact
-const getOrCreateContact = async (email, contactData) => {
+// Get or create contact function
+async function getOrCreateContact(email, contactData) {
   try {
     const accessToken = await getAccessToken();
     if (!accessToken) {
       throw new Error('Failed to get access token');
     }
 
-    // Create axios instance with default config
     const axiosInstance = axios.create({
+      baseURL: 'https://desk.zoho.com/api/v1',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
@@ -106,79 +89,65 @@ const getOrCreateContact = async (email, contactData) => {
       }
     });
 
-    // First try to find existing contact
-    const searchResponse = await axiosInstance.get('https://desk.zoho.com/api/v1/contacts/search', {
+    // Search for existing contact
+    console.log('Searching for existing contact:', email);
+    const searchResponse = await axiosInstance.get('/contacts/search', {
       params: {
         email: email
       }
     });
 
-    if (searchResponse.data && searchResponse.data.data && searchResponse.data.data.length > 0) {
+    if (searchResponse.data.data && searchResponse.data.data.length > 0) {
       console.log('Found existing contact:', searchResponse.data.data[0]);
       return searchResponse.data.data[0];
     }
 
-    // If no contact found, create new one
-    const createResponse = await axiosInstance.post('https://desk.zoho.com/api/v1/contacts', {
-      firstName: contactData.firstName,
-      lastName: contactData.lastName,
-      email: contactData.email,
-      phone: contactData.phone
-    });
-
+    // Create new contact if not found
+    console.log('Creating new contact:', contactData);
+    const createResponse = await axiosInstance.post('/contacts', contactData);
     console.log('Created new contact:', createResponse.data);
     return createResponse.data;
-
   } catch (error) {
-    console.error('Error in getOrCreateContact:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      headers: error.response?.headers
-    });
+    console.error('Error in getOrCreateContact:', error);
     throw error;
   }
-};
+}
 
-// Helper function to create ticket with retry logic
-const createTicket = async (contactId, ticketData, retryCount = 0, maxRetries = 3) => {
+// Create ticket function
+async function createTicket(contactId, ticketData) {
   try {
     const accessToken = await getAccessToken();
     if (!accessToken) {
       throw new Error('Failed to get access token');
     }
 
-    // Create axios instance with default config
     const axiosInstance = axios.create({
+      baseURL: 'https://desk.zoho.com/api/v1',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID
       }
-    });
-
-    // Log request details
-    console.log('Creating ticket with data:', {
-      contactId,
-      departmentId: process.env.ZOHO_DEPARTMENT_ID,
-      ticketData
     });
 
     const payload = {
       contactId: contactId,
       departmentId: process.env.ZOHO_DEPARTMENT_ID,
       subject: `${ticketData.serviceType} Support Request`,
-      description: ticketData.issueDescription,
-      priority: ticketData.priority,
+      description: `
+        Employee Name: ${ticketData.employeeName}
+        Email: ${ticketData.email}
+        Phone: ${ticketData.phone}
+        Service Type: ${ticketData.serviceType}
+        Follow-up Contact: ${ticketData.followUpContact}
+        Issue Description: ${ticketData.issueDescription}
+      `,
+      priority: ticketData.priority || 'Medium',
       status: 'Open',
       customFields: [
         {
-          name: 'Employee Name',
-          value: ticketData.employeeName
-        },
-        {
-          name: 'Phone Number',
-          value: ticketData.phone
+          name: 'Service Type',
+          value: ticketData.serviceType
         },
         {
           name: 'Follow-up Contact',
@@ -187,43 +156,12 @@ const createTicket = async (contactId, ticketData, retryCount = 0, maxRetries = 
       ]
     };
 
-    // Log the exact payload being sent
-    console.log('Sending ticket payload:', JSON.stringify(payload, null, 2));
-
-    const response = await axiosInstance.post('https://desk.zoho.com/api/v1/tickets', payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-      transformRequest: [(data) => JSON.stringify(data)]
-    });
-
-    console.log('Ticket creation response:', response.data);
+    console.log('Creating ticket with payload:', payload);
+    const response = await axiosInstance.post('/tickets', payload);
+    console.log('Ticket created:', response.data);
     return response.data;
-
   } catch (error) {
-    console.error('Error creating ticket:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      headers: error.response?.headers,
-      config: {
-        headers: error.config?.headers,
-        data: error.config?.data
-      }
-    });
-
-    // Check if we should retry
-    if (retryCount < maxRetries && 
-        (error.response?.status === 400 || error.response?.status === 415)) {
-      const delay = Math.pow(2, retryCount) * 5000; // 5s, 10s, 20s
-      console.log(`Retrying ticket creation after ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return createTicket(contactId, ticketData, retryCount + 1, maxRetries);
-    }
-
+    console.error('Error in createTicket:', error);
     throw error;
   }
 }
@@ -292,7 +230,7 @@ router.post('/submit-ticket', async (req, res) => {
   }
 });
 
-// Export the functions needed by the serverless function
+// Export the functions
 module.exports = {
     getAccessToken,
     getOrCreateContact,
