@@ -52,6 +52,15 @@ async function getAccessToken() {
 // Helper function to create or get contact
 async function getOrCreateContact(accessToken, email, firstName, lastName, phone) {
   try {
+    if (!accessToken) {
+      throw new Error('Access token is required');
+    }
+    if (!email) {
+      throw new Error('Email is required');
+    }
+
+    console.log('Searching for existing contact:', { email, firstName, lastName });
+
     // First try to find existing contact
     const searchResponse = await axios.get(`https://desk.zoho.com/api/v1/contacts/search`, {
       headers: {
@@ -64,16 +73,24 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
     });
 
     if (searchResponse.data.data && searchResponse.data.data.length > 0) {
+      console.log('Found existing contact:', {
+        id: searchResponse.data.data[0].id,
+        email: searchResponse.data.data[0].email
+      });
       return searchResponse.data.data[0];
     }
+
+    console.log('No existing contact found, creating new one');
 
     // If no contact found, create new one
     const contactData = {
       email: email,
-      firstName: firstName,
-      lastName: lastName,
+      firstName: firstName || 'Unknown',
+      lastName: lastName || 'User',
       phone: phone
     };
+
+    console.log('Creating new contact with data:', contactData);
 
     const createResponse = await axios.post('https://desk.zoho.com/api/v1/contacts', contactData, {
       headers: {
@@ -83,10 +100,25 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
       }
     });
 
+    console.log('Contact created successfully:', {
+      id: createResponse.data.id,
+      email: createResponse.data.email
+    });
+
     return createResponse.data;
   } catch (error) {
-    console.error('Error with contact:', error.response?.data || error.message);
-    throw error;
+    console.error('Error with contact:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.config?.data
+      }
+    });
+    throw new Error(`Contact operation failed: ${error.response?.data?.message || error.message}`);
   }
 }
 
@@ -161,19 +193,49 @@ router.post('/submit-ticket', async (req, res) => {
       priority
     } = req.body;
 
+    // Validate required fields
+    if (!employeeName || !email || !issueDescription) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
+        error: 'employeeName, email, and issueDescription are required'
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format',
+        error: 'Please provide a valid email address'
+      });
+    }
+
     // Get access token
     const accessToken = await getAccessToken();
 
     // Split employee name into first and last name
     const [firstName = '', lastName = ''] = employeeName.split(' ');
 
+    // Log the request data for debugging
+    console.log('Submitting ticket with data:', {
+      employeeName,
+      email,
+      serviceType,
+      issueDescription,
+      priority,
+      departmentId: process.env.ZOHO_DEPARTMENT_ID,
+      orgId: process.env.ZOHO_ORG_ID
+    });
+
     // Get or create contact
     const contact = await getOrCreateContact(accessToken, email, firstName, lastName, phone);
 
     // Create ticket data
     const ticketData = {
-      subject: `${serviceType} Support Request - ${firstName} ${lastName}`,
-      description: `Issue Description: ${issueDescription}\n\nFollow-up Contact: ${followUpContact}`,
+      subject: `${serviceType || 'General'} Support Request - ${firstName} ${lastName}`,
+      description: `Issue Description: ${issueDescription}\n\nFollow-up Contact: ${followUpContact || 'Not provided'}`,
       email: email,
       departmentId: process.env.ZOHO_DEPARTMENT_ID,
       contactId: contact.id,
