@@ -8,25 +8,41 @@ async function getAccessToken() {
         params.append('client_id', process.env.ZOHO_CLIENT_ID);
         params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
         params.append('grant_type', 'refresh_token');
-        params.append('scope', 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL');
 
         console.log('Making OAuth request with:', {
             clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
             clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
             refreshToken: process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set',
             departmentId: process.env.ZOHO_DEPARTMENT_ID,
-            scope: 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL'
+            orgId: process.env.ZOHO_ORG_ID
         });
 
-        const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
+        const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        if (!response.data || !response.data.access_token) {
+            console.error('Invalid token response:', response.data);
+            throw new Error('Failed to get access token');
+        }
+
+        console.log('Token response:', {
+            accessToken: response.data.access_token ? 'Received' : 'Missing',
+            scope: response.data.scope,
+            expiresIn: response.data.expires_in
+        });
+
         return response.data.access_token;
     } catch (error) {
         console.error('Token Error:', {
             message: error.message,
             response: error.response?.data,
-            status: error.response?.status
+            status: error.response?.status,
+            headers: error.response?.headers
         });
-        throw error;
+        throw new Error(`Failed to get access token: ${error.message}`);
     }
 }
 

@@ -5,25 +5,47 @@ require('dotenv').config();
 
 // Helper function to get Zoho access token
 async function getAccessToken() {
-  const params = {
-    refresh_token: process.env.ZOHO_REFRESH_TOKEN,
-    client_id: process.env.ZOHO_CLIENT_ID,
-    client_secret: process.env.ZOHO_CLIENT_SECRET,
-    grant_type: 'refresh_token',
-    scope: 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL'
-  };
-
   try {
-    const response = await axios.post('https://accounts.zoho.com/oauth/v2/token?grant_type=refresh_token', null, {
-      params,
+    const params = new URLSearchParams();
+    params.append('refresh_token', process.env.ZOHO_REFRESH_TOKEN);
+    params.append('client_id', process.env.ZOHO_CLIENT_ID);
+    params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
+    params.append('grant_type', 'refresh_token');
+
+    console.log('Making OAuth request with:', {
+      clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
+      clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
+      refreshToken: process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set',
+      departmentId: process.env.ZOHO_DEPARTMENT_ID,
+      orgId: process.env.ZOHO_ORG_ID
+    });
+
+    const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
+
+    if (!response.data || !response.data.access_token) {
+      console.error('Invalid token response:', response.data);
+      throw new Error('Failed to get access token');
+    }
+
+    console.log('Token response:', {
+      accessToken: response.data.access_token ? 'Received' : 'Missing',
+      scope: response.data.scope,
+      expiresIn: response.data.expires_in
+    });
+
     return response.data.access_token;
   } catch (error) {
-    console.error('Error getting access token:', error.response?.data || error.message);
-    throw error;
+    console.error('Token Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers
+    });
+    throw new Error(`Failed to get access token: ${error.message}`);
   }
 }
 
