@@ -63,6 +63,18 @@ module.exports = async (req, res) => {
             }
         }
 
+        // Ensure body is an object
+        if (!body || typeof body !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid request body',
+                error: {
+                    errorCode: 'INVALID_BODY',
+                    message: 'The request body must be a valid JSON object'
+                }
+            });
+        }
+
         const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
 
         // Validate required fields
