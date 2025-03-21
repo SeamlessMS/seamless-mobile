@@ -3,9 +3,23 @@ const router = express.Router();
 const axios = require('axios');
 require('dotenv').config();
 
-// Helper function to get Zoho access token
-async function getAccessToken() {
+// Token cache
+let tokenCache = {
+  accessToken: null,
+  expiresAt: null
+};
+
+// Helper function to get Zoho access token with caching
+async function getAccessToken(retryCount = 0, maxRetries = 3) {
   try {
+    // Check if we have a valid cached token
+    if (tokenCache.accessToken && tokenCache.expiresAt && Date.now() < tokenCache.expiresAt) {
+      console.log('Using cached access token');
+      return tokenCache.accessToken;
+    }
+
+    console.log('Token cache miss or expired, fetching new token...');
+
     const params = new URLSearchParams();
     params.append('refresh_token', process.env.ZOHO_REFRESH_TOKEN);
     params.append('client_id', process.env.ZOHO_CLIENT_ID);
@@ -17,7 +31,9 @@ async function getAccessToken() {
       clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
       refreshToken: process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set',
       departmentId: process.env.ZOHO_DEPARTMENT_ID,
-      orgId: process.env.ZOHO_ORG_ID
+      orgId: process.env.ZOHO_ORG_ID,
+      attempt: retryCount + 1,
+      maxRetries: maxRetries
     });
 
     const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
@@ -31,35 +47,55 @@ async function getAccessToken() {
       throw new Error('Failed to get access token');
     }
 
+    // Cache the token with expiration
+    tokenCache = {
+      accessToken: response.data.access_token,
+      expiresAt: Date.now() + (response.data.expires_in * 1000) - 300000 // Expire 5 minutes early
+    };
+
     console.log('Token response:', {
       accessToken: response.data.access_token ? 'Received' : 'Missing',
       scope: response.data.scope,
-      expiresIn: response.data.expires_in
+      expiresIn: response.data.expires_in,
+      expiresAt: new Date(tokenCache.expiresAt).toISOString()
     });
 
-    return response.data.access_token;
+    return tokenCache.accessToken;
   } catch (error) {
     console.error('Token Error:', {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
-      headers: error.response?.headers
+      headers: error.response?.headers,
+      attempt: retryCount + 1,
+      maxRetries: maxRetries
     });
-    throw new Error(`Failed to get access token: ${error.message}`);
+
+    // Check if we should retry
+    if (error.response?.status === 400 && 
+        error.response?.data?.error === 'Access Denied' && 
+        error.response?.data?.error_description?.includes('too many requests') &&
+        retryCount < maxRetries) {
+      
+      // Calculate delay with exponential backoff (5s, 10s, 20s)
+      const delay = Math.pow(2, retryCount) * 5000;
+      console.log(`Rate limited. Retrying in ${delay/1000} seconds...`);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return getAccessToken(retryCount + 1, maxRetries);
+    }
+
+    throw error;
   }
 }
 
 // Helper function to create or get contact
-async function getOrCreateContact(accessToken, email, firstName, lastName, phone) {
+const getOrCreateContact = async (email, contactData) => {
   try {
+    const accessToken = await getAccessToken();
     if (!accessToken) {
-      throw new Error('Access token is required');
+      throw new Error('Failed to get access token');
     }
-    if (!email) {
-      throw new Error('Email is required');
-    }
-
-    console.log('Searching for existing contact:', { email, firstName, lastName });
 
     // Create axios instance with default config
     const axiosInstance = axios.create({
@@ -77,89 +113,40 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
       }
     });
 
-    if (searchResponse.data.data && searchResponse.data.data.length > 0) {
-      console.log('Found existing contact:', {
-        id: searchResponse.data.data[0].id,
-        email: searchResponse.data.data[0].email
-      });
+    if (searchResponse.data && searchResponse.data.data && searchResponse.data.data.length > 0) {
+      console.log('Found existing contact:', searchResponse.data.data[0]);
       return searchResponse.data.data[0];
     }
 
-    console.log('No existing contact found, creating new one');
-
     // If no contact found, create new one
-    const contactData = {
-      email: email,
-      firstName: firstName || 'Unknown',
-      lastName: lastName || 'User',
-      phone: phone
-    };
-
-    console.log('Creating new contact with data:', contactData);
-
-    const createResponse = await axiosInstance.post('https://desk.zoho.com/api/v1/contacts', contactData);
-
-    console.log('Contact created successfully:', {
-      id: createResponse.data.id,
-      email: createResponse.data.email
+    const createResponse = await axiosInstance.post('https://desk.zoho.com/api/v1/contacts', {
+      firstName: contactData.firstName,
+      lastName: contactData.lastName,
+      email: contactData.email,
+      phone: contactData.phone
     });
 
+    console.log('Created new contact:', createResponse.data);
     return createResponse.data;
+
   } catch (error) {
-    console.error('Error with contact:', {
-      message: error.message,
-      response: error.response?.data,
+    console.error('Error in getOrCreateContact:', {
       status: error.response?.status,
-      headers: error.response?.headers,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        data: error.config?.data
-      }
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers
     });
-    throw new Error(`Contact operation failed: ${error.response?.data?.message || error.message}`);
+    throw error;
   }
-}
+};
 
-// Helper function to create ticket
-async function createTicket(accessToken, ticketData) {
+// Helper function to create ticket with retry logic
+const createTicket = async (contactId, ticketData, retryCount = 0, maxRetries = 3) => {
   try {
-    // Ensure all required fields are present
-    const payload = {
-      subject: ticketData.subject,
-      description: ticketData.description,
-      email: ticketData.email,
-      departmentId: ticketData.departmentId,
-      contactId: ticketData.contactId,
-      priority: ticketData.priority || 'Medium',
-      category: ticketData.category || 'General Support',
-      channel: 'Web',
-      status: 'Open',
-      customFields: []
-    };
-
-    // Add custom fields if they exist
-    if (ticketData.followUpContact) {
-      payload.customFields.push({
-        value: ticketData.followUpContact,
-        cf: {
-          cfName: 'Follow-up Contact'
-        }
-      });
+    const accessToken = await getAccessToken();
+    if (!accessToken) {
+      throw new Error('Failed to get access token');
     }
-
-    // Log complete request details
-    console.log('=== Ticket Creation Request Details ===');
-    console.log('Access Token:', accessToken ? 'Present' : 'Missing');
-    console.log('Organization ID:', process.env.ZOHO_ORG_ID ? 'Present' : 'Missing');
-    console.log('Department ID:', process.env.ZOHO_DEPARTMENT_ID ? 'Present' : 'Missing');
-    console.log('Payload:', JSON.stringify(payload, null, 2));
-    console.log('Headers:', {
-      'Authorization': `Zoho-oauthtoken ${accessToken ? 'Present' : 'Missing'}`,
-      'orgId': process.env.ZOHO_ORG_ID || 'Missing',
-      'Content-Type': 'application/json'
-    });
-    console.log('=====================================');
 
     // Create axios instance with default config
     const axiosInstance = axios.create({
@@ -170,27 +157,73 @@ async function createTicket(accessToken, ticketData) {
       }
     });
 
-    const response = await axiosInstance.post('https://desk.zoho.com/api/v1/tickets', payload);
-
-    console.log('Ticket created successfully:', {
-      id: response.data.id,
-      ticketNumber: response.data.ticketNumber
+    // Log request details
+    console.log('Creating ticket with data:', {
+      contactId,
+      departmentId: process.env.ZOHO_DEPARTMENT_ID,
+      ticketData
     });
 
+    const payload = {
+      contactId: contactId,
+      departmentId: process.env.ZOHO_DEPARTMENT_ID,
+      subject: `${ticketData.serviceType} Support Request`,
+      description: ticketData.issueDescription,
+      priority: ticketData.priority,
+      status: 'Open',
+      customFields: [
+        {
+          name: 'Employee Name',
+          value: ticketData.employeeName
+        },
+        {
+          name: 'Phone Number',
+          value: ticketData.phone
+        },
+        {
+          name: 'Follow-up Contact',
+          value: ticketData.followUpContact
+        }
+      ]
+    };
+
+    // Log the exact payload being sent
+    console.log('Sending ticket payload:', JSON.stringify(payload, null, 2));
+
+    const response = await axiosInstance.post('https://desk.zoho.com/api/v1/tickets', payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      transformRequest: [(data) => JSON.stringify(data)]
+    });
+
+    console.log('Ticket creation response:', response.data);
     return response.data;
+
   } catch (error) {
-    console.error('=== Ticket Creation Error Details ===');
-    console.error('Error Message:', error.message);
-    console.error('Response Data:', error.response?.data);
-    console.error('Response Status:', error.response?.status);
-    console.error('Response Headers:', error.response?.headers);
-    console.error('Request Config:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      headers: error.config?.headers,
-      data: error.config?.data
+    console.error('Error creating ticket:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      config: {
+        headers: error.config?.headers,
+        data: error.config?.data
+      }
     });
-    console.error('=====================================');
+
+    // Check if we should retry
+    if (retryCount < maxRetries && 
+        (error.response?.status === 400 || error.response?.status === 415)) {
+      const delay = Math.pow(2, retryCount) * 5000; // 5s, 10s, 20s
+      console.log(`Retrying ticket creation after ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return createTicket(contactId, ticketData, retryCount + 1, maxRetries);
+    }
+
     throw error;
   }
 }
@@ -198,24 +231,29 @@ async function createTicket(accessToken, ticketData) {
 // Route to submit a ticket
 router.post('/submit-ticket', async (req, res) => {
   try {
-    // Log the incoming request for debugging
-    console.log('Received ticket submission request:', {
-      headers: req.headers,
-      body: req.body,
-      contentType: req.get('content-type')
+    console.log('Incoming request details:');
+    console.log('Headers:', req.headers);
+    console.log('Content-Type:', req.get('Content-Type'));
+    console.log('Body:', req.body);
+
+    console.log('Processing ticket submission...');
+    const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
+
+    // Get or create contact
+    const [firstName, lastName] = employeeName.split(' ');
+    const contact = await getOrCreateContact(email, {
+      firstName,
+      lastName,
+      email,
+      phone
     });
 
-    // Validate request content type
-    const contentType = req.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return res.status(415).json({
-        success: false,
-        message: 'Unsupported Media Type',
-        error: 'Request must be sent with Content-Type: application/json'
-      });
+    if (!contact) {
+      throw new Error('Failed to create contact');
     }
 
-    const {
+    // Create ticket
+    const ticket = await createTicket(contact.id, {
       employeeName,
       email,
       phone,
@@ -223,79 +261,33 @@ router.post('/submit-ticket', async (req, res) => {
       followUpContact,
       issueDescription,
       priority
-    } = req.body;
-
-    // Validate required fields
-    if (!employeeName || !email || !issueDescription) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields',
-        error: 'employeeName, email, and issueDescription are required'
-      });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email format',
-        error: 'Please provide a valid email address'
-      });
-    }
-
-    // Get access token
-    const accessToken = await getAccessToken();
-
-    // Split employee name into first and last name
-    const [firstName = '', lastName = ''] = employeeName.split(' ');
-
-    // Log the request data for debugging
-    console.log('Submitting ticket with data:', {
-      employeeName,
-      email,
-      serviceType,
-      issueDescription,
-      priority,
-      departmentId: process.env.ZOHO_DEPARTMENT_ID,
-      orgId: process.env.ZOHO_ORG_ID
     });
 
-    // Get or create contact
-    const contact = await getOrCreateContact(accessToken, email, firstName, lastName, phone);
-
-    // Create ticket data
-    const ticketData = {
-      subject: `${serviceType || 'General'} Support Request - ${firstName} ${lastName}`,
-      description: `Issue Description: ${issueDescription}\n\nFollow-up Contact: ${followUpContact || 'Not provided'}`,
-      email: email,
-      departmentId: process.env.ZOHO_DEPARTMENT_ID,
-      contactId: contact.id,
-      priority: priority || 'Medium',
-      category: serviceType || 'General Support',
-      followUpContact: followUpContact
-    };
-
-    // Create ticket
-    const ticket = await createTicket(accessToken, ticketData);
+    if (!ticket) {
+      throw new Error('Failed to create ticket');
+    }
 
     res.json({
       success: true,
-      message: 'Ticket submitted successfully',
-      ticketId: ticket.id,
-      ticketNumber: ticket.ticketNumber
+      ticketId: ticket.id
     });
   } catch (error) {
-    console.error('Error submitting ticket:', {
+    console.error('Error in submit-ticket route:', error);
+    console.error('Error details:', {
       message: error.message,
+      stack: error.stack,
       response: error.response?.data,
-      config: error.config
+      status: error.response?.status,
+      headers: error.response?.headers
     });
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to submit ticket',
-      error: error.response?.data || error.message
+      error: {
+        errorCode: error.response?.data?.errorCode || 'INTERNAL_SERVER_ERROR',
+        message: error.response?.data?.message || error.message
+      }
     });
   }
 });
