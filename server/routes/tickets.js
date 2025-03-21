@@ -292,4 +292,9 @@ router.post('/submit-ticket', async (req, res) => {
   }
 });
 
-module.exports = router; 
+// Export the functions needed by the serverless function
+module.exports = {
+    getAccessToken,
+    getOrCreateContact,
+    createTicket
+}; 

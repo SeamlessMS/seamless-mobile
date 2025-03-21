@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 // Mount routes
-app.use('/api', ticketRoutes);
+app.use('/api', require('./server/routes/router'));
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
