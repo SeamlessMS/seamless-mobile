@@ -20,13 +20,10 @@ async function getAccessToken() {
       orgId: process.env.ZOHO_ORG_ID
     });
 
-    const response = await axios({
-      method: 'post',
-      url: 'https://accounts.zoho.com/oauth/v2/token',
+    const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      data: params
+      }
     });
 
     if (!response.data || !response.data.access_token) {
@@ -65,9 +62,7 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
     console.log('Searching for existing contact:', { email, firstName, lastName });
 
     // First try to find existing contact
-    const searchResponse = await axios({
-      method: 'get',
-      url: 'https://desk.zoho.com/api/v1/contacts/search',
+    const searchResponse = await axios.get('https://desk.zoho.com/api/v1/contacts/search', {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
@@ -98,15 +93,12 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
 
     console.log('Creating new contact with data:', contactData);
 
-    const createResponse = await axios({
-      method: 'post',
-      url: 'https://desk.zoho.com/api/v1/contacts',
+    const createResponse = await axios.post('https://desk.zoho.com/api/v1/contacts', contactData, {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
         'Content-Type': 'application/json'
-      },
-      data: contactData
+      }
     });
 
     console.log('Contact created successfully:', {
