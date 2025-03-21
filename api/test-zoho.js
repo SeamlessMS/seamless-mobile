@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Temporary access token
-const TEMP_ACCESS_TOKEN = '1000.dbd3edddef00214add551675524426a6.85d6d9b2f225dc84f7ebad86b5bb52e0';
+const TEMP_ACCESS_TOKEN = '1000.729a93ad7d1c13e74f0dbf16f17ef8c8.c9b92b878ace40e39c4977e6437d0024';
 
 async function generateRefreshToken() {
     try {
@@ -51,11 +51,10 @@ async function generateRefreshToken() {
 if (require.main === module) {
     (async () => {
         try {
-            console.log('Generating refresh token...');
-            const refreshToken = await generateRefreshToken();
-            console.log('Refresh token generated:', refreshToken);
-
-            // Now use the refresh token to get a new access token
+            console.log('Testing existing refresh token...');
+            const refreshToken = '1000.5630d240bfaef37db53a64df48165495.2659c2d6ddb06b8043531090a0248c64';
+            
+            // Use the refresh token to get a new access token
             const params = new URLSearchParams();
             params.append('refresh_token', refreshToken);
             params.append('client_id', process.env.ZOHO_CLIENT_ID);
@@ -66,6 +65,15 @@ if (require.main === module) {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
+            });
+
+            console.log('Token response details:', {
+                accessToken: tokenResponse.data.access_token ? 'Received' : 'Missing',
+                refreshToken: tokenResponse.data.refresh_token ? 'Received' : 'Missing',
+                scope: tokenResponse.data.scope,
+                expiresIn: tokenResponse.data.expires_in,
+                apiDomain: tokenResponse.data.api_domain,
+                tokenType: tokenResponse.data.token_type
             });
 
             const accessToken = tokenResponse.data.access_token;
@@ -125,7 +133,21 @@ if (require.main === module) {
 // Export for Vercel serverless function
 module.exports = async (req, res) => {
     try {
-        console.log('Using provided access token');
+        // Get a new access token using the refresh token
+        const params = new URLSearchParams();
+        params.append('refresh_token', process.env.ZOHO_REFRESH_TOKEN);
+        params.append('client_id', process.env.ZOHO_CLIENT_ID);
+        params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
+        params.append('grant_type', 'refresh_token');
+
+        const tokenResponse = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        const accessToken = tokenResponse.data.access_token;
+        console.log('Generated new access token for Vercel function');
 
         const contactData = {
             lastName: 'Test',
@@ -135,7 +157,7 @@ module.exports = async (req, res) => {
 
         const contact = await axios.post('https://desk.zoho.com/api/v1/contacts', contactData, {
             headers: {
-                'Authorization': `Zoho-oauthtoken ${TEMP_ACCESS_TOKEN}`,
+                'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
                 'Content-Type': 'application/json'
             }
@@ -157,7 +179,7 @@ module.exports = async (req, res) => {
 
         const ticket = await axios.post('https://desk.zoho.com/api/v1/tickets', ticketData, {
             headers: {
-                'Authorization': `Zoho-oauthtoken ${TEMP_ACCESS_TOKEN}`,
+                'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
                 'Content-Type': 'application/json'
             }
