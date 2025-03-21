@@ -64,10 +64,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(formData)
             });
             
-            const result = await response.json();
+            let result;
+            try {
+                result = await response.json();
+            } catch (jsonError) {
+                console.error('Failed to parse response:', jsonError);
+                throw new Error('Invalid response from server. Please try again later.');
+            }
             
             if (!response.ok) {
-                throw new Error(result.message || result.error || 'Failed to submit ticket');
+                const errorMessage = result.message || result.error || 'Failed to submit ticket';
+                console.error('Server error:', result);
+                throw new Error(errorMessage);
             }
             
             if (result.success) {
@@ -76,11 +84,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert(successMessage);
                 ticketForm.reset();
             } else {
-                throw new Error(result.message || 'Failed to submit ticket');
+                const errorMessage = result.message || 'Failed to submit ticket';
+                console.error('Submission failed:', result);
+                throw new Error(errorMessage);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert(error.message + '\n\nIf this issue persists, please contact support at cst@seamlessms.net');
+            // Log the full error object for debugging
+            console.error('Full error object:', error);
+            
+            // Extract error message
+            let errorMessage;
+            if (typeof error === 'object' && error !== null) {
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.error) {
+                    errorMessage = error.error;
+                } else if (error.toString) {
+                    errorMessage = error.toString();
+                } else {
+                    errorMessage = 'An unexpected error occurred';
+                }
+            } else {
+                errorMessage = String(error);
+            }
+            
+            // Show user-friendly error message
+            alert(errorMessage + '\n\nIf this issue persists, please contact support at cst@seamlessms.net');
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;

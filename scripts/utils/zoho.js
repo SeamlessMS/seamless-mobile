@@ -42,7 +42,7 @@ async function createZohoTicket(ticketData) {
     try {
         const token = await getAccessToken();
 
-        const response = await axios.post(`${ZOHO_API.baseURL}/tickets`, {
+        const requestData = {
             subject: ticketData.subject,
             description: ticketData.description,
             priority: ticketData.priority,
@@ -57,13 +57,18 @@ async function createZohoTicket(ticketData) {
                 cf_server_name: process.env.SERVER_NAME || 'Unknown Server',
                 cf_alert_type: ticketData.category
             }
-        }, {
-            headers: {
-                'Authorization': `Zoho-oauthtoken ${token}`,
-                'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json'
+        };
+
+        const response = await axios.post(`${ZOHO_API.baseURL}/tickets`, 
+            JSON.stringify(requestData), 
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Zoho-oauthtoken ${token}`,
+                    'orgId': process.env.ZOHO_ORG_ID
+                }
             }
-        });
+        );
 
         logger.info('Created Zoho ticket:', {
             ticketId: response.data.id,

@@ -70,7 +70,7 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
 // Helper function to create ticket
 async function createTicket(accessToken, ticketData) {
   try {
-    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', ticketData, {
+    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', JSON.stringify(ticketData), {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
