@@ -151,7 +151,7 @@ async function createTicket(accessToken, ticketData) {
 
     console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
 
-    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
+    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', JSON.stringify(payload), {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
