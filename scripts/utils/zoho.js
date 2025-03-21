@@ -15,7 +15,7 @@ async function getAccessToken() {
             return global.zohoAccessToken;
         }
 
-        // Get new token
+        // Get new token using form-urlencoded format
         const response = await axios.post(config.tokenURL, 
             `refresh_token=${process.env.ZOHO_REFRESH_TOKEN}&client_id=${process.env.ZOHO_CLIENT_ID}&client_secret=${process.env.ZOHO_CLIENT_SECRET}&grant_type=refresh_token&scope=Desk.tickets.CREATE,Desk.tickets.READ,Desk.tickets.UPDATE,Desk.contacts.CREATE,Desk.contacts.READ,Desk.contacts.UPDATE`,
             { 
@@ -32,7 +32,11 @@ async function getAccessToken() {
         return global.zohoAccessToken;
     } catch (error) {
         logger.error('Error getting Zoho access token:', error.message);
-        throw new Error('Failed to get Zoho access token');
+        if (error.response) {
+            logger.error('Zoho token error details:', error.response.data);
+            throw new Error(`Failed to get Zoho access token: ${error.response.data.message || error.message}`);
+        }
+        throw error;
     }
 }
 
@@ -74,6 +78,9 @@ async function createZohoTicket(ticketData) {
             ]
         };
 
+        // Log the request data for debugging
+        logger.info('Creating Zoho ticket with data:', requestData);
+
         // Create ticket
         const response = await axios.post(`${config.baseURL}/tickets`, requestData, {
             headers: {
@@ -108,26 +115,30 @@ async function updateTicketStatus(ticketId, status) {
             status
         }, {
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Zoho-oauthtoken ${token}`,
-                'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json'
+                'orgId': process.env.ZOHO_ORG_ID
             }
         });
 
-        logger.info('Updated ticket status:', {
+        logger.info('Updated Zoho ticket status:', {
             ticketId,
             status
         });
 
         return response.data;
     } catch (error) {
-        logger.error('Failed to update ticket status:', error);
-        throw new Error('Failed to update ticket status');
+        logger.error('Error updating Zoho ticket status:', error.message);
+        if (error.response) {
+            logger.error('Zoho API error details:', error.response.data);
+            throw new Error(`Failed to update ticket status: ${error.response.data.message || error.message}`);
+        }
+        throw error;
     }
 }
 
 // Add comment to ticket
-async function addTicketComment(ticketId, comment, isPublic = false) {
+async function addTicketComment(ticketId, comment, isPublic = true) {
     try {
         const token = await getAccessToken();
 
@@ -136,21 +147,26 @@ async function addTicketComment(ticketId, comment, isPublic = false) {
             isPublic
         }, {
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Zoho-oauthtoken ${token}`,
-                'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json'
+                'orgId': process.env.ZOHO_ORG_ID
             }
         });
 
-        logger.info('Added comment to ticket:', {
+        logger.info('Added comment to Zoho ticket:', {
             ticketId,
+            commentLength: comment.length,
             isPublic
         });
 
         return response.data;
     } catch (error) {
-        logger.error('Failed to add comment to ticket:', error);
-        throw new Error('Failed to add comment to ticket');
+        logger.error('Error adding comment to Zoho ticket:', error.message);
+        if (error.response) {
+            logger.error('Zoho API error details:', error.response.data);
+            throw new Error(`Failed to add comment: ${error.response.data.message || error.message}`);
+        }
+        throw error;
     }
 }
 
