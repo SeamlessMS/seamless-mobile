@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 
 // Import routes
-const ticketRoutes = require('./server/routes/tickets');
+const ticketsRouter = require('./server/routes/tickets');
 
 // Middleware
 app.use(cors());  // Allow all origins during development
@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use(express.static('public'));
 
 // Mount routes
-app.use('/api', require('./server/routes/router'));
+app.use('/api', ticketsRouter);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({

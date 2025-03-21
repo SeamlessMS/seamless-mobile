@@ -239,9 +239,5 @@ router.post('/submit-ticket', async (req, res) => {
   }
 });
 
-// Export the functions
-module.exports = {
-    getAccessToken,
-    getOrCreateContact,
-    createTicket
-}; 
+// Export the router
+module.exports = router; 
