@@ -158,17 +158,25 @@ async function createTicket(accessToken, ticketData) {
       });
     }
 
-    console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
+    // Log complete request details
+    console.log('=== Ticket Creation Request Details ===');
+    console.log('Access Token:', accessToken ? 'Present' : 'Missing');
+    console.log('Organization ID:', process.env.ZOHO_ORG_ID ? 'Present' : 'Missing');
+    console.log('Department ID:', process.env.ZOHO_DEPARTMENT_ID ? 'Present' : 'Missing');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    console.log('Headers:', {
+      'Authorization': `Zoho-oauthtoken ${accessToken ? 'Present' : 'Missing'}`,
+      'orgId': process.env.ZOHO_ORG_ID || 'Missing',
+      'Content-Type': 'application/json'
+    });
+    console.log('=====================================');
 
-    const response = await axios({
-      method: 'post',
-      url: 'https://desk.zoho.com/api/v1/tickets',
+    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
       headers: {
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
         'orgId': process.env.ZOHO_ORG_ID,
         'Content-Type': 'application/json'
-      },
-      data: payload
+      }
     });
 
     console.log('Ticket created successfully:', {
@@ -178,16 +186,18 @@ async function createTicket(accessToken, ticketData) {
 
     return response.data;
   } catch (error) {
-    console.error('Error creating ticket:', {
-      message: error.message,
-      response: error.response?.data,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers,
-        data: error.config?.data
-      }
+    console.error('=== Ticket Creation Error Details ===');
+    console.error('Error Message:', error.message);
+    console.error('Response Data:', error.response?.data);
+    console.error('Response Status:', error.response?.status);
+    console.error('Response Headers:', error.response?.headers);
+    console.error('Request Config:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      headers: error.config?.headers,
+      data: error.config?.data
     });
+    console.error('=====================================');
     throw error;
   }
 }
