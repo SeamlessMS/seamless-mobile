@@ -93,23 +93,24 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Full error object:', error);
             
             // Extract error message
-            let errorMessage;
-            if (typeof error === 'object' && error !== null) {
+            let errorMessage = 'An unexpected error occurred';
+            
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (error && typeof error === 'object') {
                 if (error.message) {
                     errorMessage = error.message;
                 } else if (error.error) {
                     errorMessage = error.error;
                 } else if (error.toString) {
                     errorMessage = error.toString();
-                } else {
-                    errorMessage = 'An unexpected error occurred';
                 }
-            } else {
+            } else if (error) {
                 errorMessage = String(error);
             }
             
             // Show user-friendly error message
-            alert(errorMessage + '\n\nIf this issue persists, please contact support at cst@seamlessms.net');
+            alert(`Error submitting ticket: ${errorMessage}\n\nIf this issue persists, please contact support at cst@seamlessms.net`);
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
