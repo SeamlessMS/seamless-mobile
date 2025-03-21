@@ -61,13 +61,17 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
 
     console.log('Searching for existing contact:', { email, firstName, lastName });
 
-    // First try to find existing contact
-    const searchResponse = await axios.get('https://desk.zoho.com/api/v1/contacts/search', {
+    // Create axios instance with default config
+    const axiosInstance = axios.create({
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'orgId': process.env.ZOHO_ORG_ID,
-        'Content-Type': 'application/json'
-      },
+        'orgId': process.env.ZOHO_ORG_ID
+      }
+    });
+
+    // First try to find existing contact
+    const searchResponse = await axiosInstance.get('https://desk.zoho.com/api/v1/contacts/search', {
       params: {
         email: email
       }
@@ -93,13 +97,7 @@ async function getOrCreateContact(accessToken, email, firstName, lastName, phone
 
     console.log('Creating new contact with data:', contactData);
 
-    const createResponse = await axios.post('https://desk.zoho.com/api/v1/contacts', contactData, {
-      headers: {
-        'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'orgId': process.env.ZOHO_ORG_ID,
-        'Content-Type': 'application/json'
-      }
-    });
+    const createResponse = await axiosInstance.post('https://desk.zoho.com/api/v1/contacts', contactData);
 
     console.log('Contact created successfully:', {
       id: createResponse.data.id,
@@ -163,13 +161,16 @@ async function createTicket(accessToken, ticketData) {
     });
     console.log('=====================================');
 
-    const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
+    // Create axios instance with default config
+    const axiosInstance = axios.create({
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Zoho-oauthtoken ${accessToken}`,
-        'orgId': process.env.ZOHO_ORG_ID,
-        'Content-Type': 'application/json'
+        'orgId': process.env.ZOHO_ORG_ID
       }
     });
+
+    const response = await axiosInstance.post('https://desk.zoho.com/api/v1/tickets', payload);
 
     console.log('Ticket created successfully:', {
       id: response.data.id,
