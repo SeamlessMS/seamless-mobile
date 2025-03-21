@@ -15,6 +15,9 @@ app.use(express.json({ limit: '10mb' })); // Parse JSON with size limit
 app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded bodies
 app.use(express.static('public'));
 
+// Mount routes
+app.use('/api', ticketRoutes);
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -349,9 +352,6 @@ app.get('/api/test-zoho', async (req, res) => {
         });
     }
 });
-
-// Use ticket routes
-app.use('/api', ticketRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
