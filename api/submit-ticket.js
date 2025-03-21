@@ -28,8 +28,8 @@ module.exports = async (req, res) => {
     }
 
     // Check content type
-    const contentType = req.headers['content-type'];
-    if (!contentType || !contentType.includes('application/json')) {
+    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
+    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
         return res.status(415).json({
             success: false,
             message: 'Unsupported media type',
