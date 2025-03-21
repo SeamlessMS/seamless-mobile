@@ -73,15 +73,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Server error:', errorData);
+                console.error('Server error:', result);
                 let errorMessage = 'An error occurred while submitting your ticket.';
                 
-                if (errorData.error) {
-                    if (typeof errorData.error === 'object') {
-                        errorMessage = `Error: ${JSON.stringify(errorData.error)}`;
+                if (result.error) {
+                    if (typeof result.error === 'object') {
+                        errorMessage = `Error: ${JSON.stringify(result.error)}`;
                     } else {
-                        errorMessage = `Error: ${errorData.error}`;
+                        errorMessage = `Error: ${result.error}`;
                     }
                 }
                 
