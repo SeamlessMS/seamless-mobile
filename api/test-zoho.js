@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // Temporary access token
-const TEMP_ACCESS_TOKEN = '1000.bc4575db9fdf7023549ccad3b2b15956.d6e2f5bda1b864f1ce2c7636c79885cc';
+const TEMP_ACCESS_TOKEN = '1000.b6d89b8fcc85640e704bdad5dcc6dec3.353b7eddc6bf1b49ba1b0b1dc8254f24';
 
 async function generateRefreshToken() {
     try {
@@ -11,13 +11,13 @@ async function generateRefreshToken() {
         params.append('client_id', process.env.ZOHO_CLIENT_ID);
         params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
         params.append('grant_type', 'authorization_code');
-        params.append('scope', 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.READ,Desk.basic.READ');
+        params.append('scope', 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.ALL,Desk.basic.READ,Desk.search.READ');
 
         console.log('Generating refresh token with:', {
             clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
             clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
             code: TEMP_ACCESS_TOKEN,
-            requestedScopes: 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.READ,Desk.basic.READ'
+            requestedScopes: 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.contacts.UPDATE,Desk.settings.ALL,Desk.basic.READ,Desk.search.READ'
         });
 
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params, {
