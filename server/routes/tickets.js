@@ -9,7 +9,8 @@ async function getAccessToken() {
     refresh_token: process.env.ZOHO_REFRESH_TOKEN,
     client_id: process.env.ZOHO_CLIENT_ID,
     client_secret: process.env.ZOHO_CLIENT_SECRET,
-    scope: 'Desk.tickets.READ,Desk.tickets.CREATE,Desk.tickets.UPDATE,Desk.contacts.READ,Desk.contacts.CREATE,Desk.settings.READ,Desk.basic.READ'
+    grant_type: 'refresh_token',
+    scope: 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL'
   };
 
   try {

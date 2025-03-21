@@ -8,12 +8,14 @@ async function getAccessToken() {
         params.append('client_id', process.env.ZOHO_CLIENT_ID);
         params.append('client_secret', process.env.ZOHO_CLIENT_SECRET);
         params.append('grant_type', 'refresh_token');
+        params.append('scope', 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL');
 
         console.log('Making OAuth request with:', {
             clientId: process.env.ZOHO_CLIENT_ID ? 'Set' : 'Not set',
             clientSecret: process.env.ZOHO_CLIENT_SECRET ? 'Set' : 'Not set',
             refreshToken: process.env.ZOHO_REFRESH_TOKEN ? 'Set' : 'Not set',
-            departmentId: process.env.ZOHO_DEPARTMENT_ID
+            departmentId: process.env.ZOHO_DEPARTMENT_ID,
+            scope: 'Desk.tickets.ALL,Desk.basic.ALL,Desk.contacts.ALL,Desk.search.READ,Desk.settings.ALL'
         });
 
         const response = await axios.post('https://accounts.zoho.com/oauth/v2/token', params);
