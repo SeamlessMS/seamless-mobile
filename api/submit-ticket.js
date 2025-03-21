@@ -27,6 +27,22 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Parse JSON body if it's a string
+    if (typeof req.body === 'string') {
+        try {
+            req.body = JSON.parse(req.body);
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid JSON format',
+                error: {
+                    errorCode: 'INVALID_JSON',
+                    message: 'The request body must be valid JSON'
+                }
+            });
+        }
+    }
+
     try {
         console.log('Incoming request details:');
         console.log('Headers:', req.headers);
