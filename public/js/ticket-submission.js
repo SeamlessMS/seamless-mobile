@@ -73,8 +73,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (!response.ok) {
-                const errorMessage = result.message || result.error || 'Failed to submit ticket';
-                console.error('Server error:', result);
+                const errorData = await response.json();
+                console.error('Server error:', errorData);
+                let errorMessage = 'An error occurred while submitting your ticket.';
+                
+                if (errorData.error) {
+                    if (typeof errorData.error === 'object') {
+                        errorMessage = `Error: ${JSON.stringify(errorData.error)}`;
+                    } else {
+                        errorMessage = `Error: ${errorData.error}`;
+                    }
+                }
+                
+                alert(errorMessage);
                 throw new Error(errorMessage);
             }
             
@@ -89,28 +100,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(errorMessage);
             }
         } catch (error) {
-            // Log the full error object for debugging
-            console.error('Full error object:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                error: error
+            });
             
-            // Extract error message
-            let errorMessage = 'An unexpected error occurred';
-            
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            } else if (error && typeof error === 'object') {
-                if (error.message) {
-                    errorMessage = error.message;
-                } else if (error.error) {
-                    errorMessage = error.error;
-                } else if (error.toString) {
-                    errorMessage = error.toString();
-                }
-            } else if (error) {
-                errorMessage = String(error);
+            let errorMessage = 'An error occurred while submitting your ticket.';
+            if (error.message) {
+                errorMessage = `Error: ${error.message}`;
+            } else if (error.error) {
+                errorMessage = `Error: ${error.error}`;
+            } else if (typeof error === 'object') {
+                errorMessage = `Error: ${JSON.stringify(error)}`;
+            } else {
+                errorMessage = `Error: ${error.toString()}`;
             }
             
-            // Show user-friendly error message
-            alert(`Error submitting ticket: ${errorMessage}\n\nIf this issue persists, please contact support at cst@seamlessms.net`);
+            alert(errorMessage);
         } finally {
             // Re-enable submit button and restore original text
             submitButton.disabled = false;
