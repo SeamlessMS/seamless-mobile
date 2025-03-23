@@ -62,9 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('https://seamless-mobile.vercel.app/api/submit-ticket', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formData)
+            }).catch(error => {
+                console.error('Network error:', error);
+                throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
             });
             
             let result;
