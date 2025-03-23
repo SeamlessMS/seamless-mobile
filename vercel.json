@@ -2,7 +2,8 @@
   "version": 2,
   "git": {
     "deploymentEnabled": {
-      "master": true
+      "master": true,
+      "testing": true
     }
   },
   "builds": [
@@ -36,5 +37,19 @@
     "ZOHO_DEPARTMENT_ID": "@zoho_department_id",
     "NEXT_PUBLIC_API_URL": "@next_public_api_url",
     "NEXT_PUBLIC_AUTH_API_URL": "@next_public_auth_api_url"
+  },
+  "environments": {
+    "production": {
+      "env": {
+        "NEXT_PUBLIC_API_URL": "https://www.seamlessms.net/api/submit-ticket",
+        "NEXT_PUBLIC_AUTH_API_URL": "https://www.seamlessms.net"
+      }
+    },
+    "preview": {
+      "env": {
+        "NEXT_PUBLIC_API_URL": "https://seamless-mobile.vercel.app/api/submit-ticket",
+        "NEXT_PUBLIC_AUTH_API_URL": "https://seamless-mobile.vercel.app"
+      }
+    }
   }
 } 

@@ -48,9 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Submitting form data...');
             
             // Send data to server
-            const response = await fetch('https://www.seamlessms.net/api/submit-ticket', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://seamless-mobile.vercel.app/api/submit-ticket';
+            console.log('Using API URL:', apiUrl);
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
-                body: formData // FormData automatically sets the correct Content-Type
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
             });
             
             let result;
