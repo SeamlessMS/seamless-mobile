@@ -1,5 +1,8 @@
 const axios = require('axios');
 
+// Version number for deployment tracking
+const VERSION = '1.0.1';
+
 // Token cache for the serverless function
 let tokenCache = {
     accessToken: null,
@@ -174,6 +177,7 @@ module.exports = async (req, res) => {
         'Access-Control-Allow-Headers',
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
     );
+    res.setHeader('X-API-Version', VERSION);
 
     // Handle OPTIONS request for CORS
     if (req.method === 'OPTIONS') {

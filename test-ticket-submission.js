@@ -10,7 +10,7 @@ async function testTicketSubmission() {
             phone: '123-456-7890',
             serviceType: 'Technical Support',
             followUpContact: 'Email and Phone',
-            issueDescription: 'Test ticket submission with custom fields',
+            issueDescription: `Test ticket submission with custom fields - ${new Date().toISOString()}`,
             priority: 'Medium'
         };
 
@@ -40,5 +40,5 @@ async function testTicketSubmission() {
     }
 }
 
-console.log('Starting ticket submission test...');
+console.log('Starting ticket submission test at:', new Date().toISOString());
 testTicketSubmission(); 
