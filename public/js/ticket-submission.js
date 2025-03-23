@@ -59,16 +59,17 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Submitting form data:', formData);
             
             // Send data to server
-            const response = await fetch('https://seamless-mobile.vercel.app/api/submit-ticket', {
+            const response = await fetch('/api/submit-ticket', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: 'same-origin'
             }).catch(error => {
                 console.error('Network error:', error);
-                throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+                throw new Error('Unable to connect to the server. Please check your internet connection and try again. Error: ' + error.message);
             });
             
             let result;
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Server response:', result);
             } catch (jsonError) {
                 console.error('Failed to parse response:', jsonError);
-                throw new Error('Invalid response from server. Please try again later.');
+                throw new Error('Invalid response from server. Please try again later. Error: ' + jsonError.message);
             }
             
             if (!response.ok) {
