@@ -187,119 +187,132 @@
         }
     </style>
     <script>
-        // Initialize Stripe with test publishable key
-        const stripe = Stripe('pk_test_51OvCwbGXXB5SZbPHHVCPKqHDTFJhVBLGKWVWGkLHw8ieejOLWAx4OKTBpDQMXqZBqVvYTT2od1Hs7YPJFGTGhHxF00J5KZzD1R');
-        
-        // Configure Stripe Elements with custom font
-        const elements = stripe.elements({
-            fonts: [
-                {
-                    cssSrc: 'https://fonts.googleapis.com/css?family=Source+Code+Pro',
-                },
-            ],
-        });
-
-        // Define custom styling for Stripe Elements
-        const style = {
-            base: {
-                color: '#32325d',
-                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                fontSmoothing: 'antialiased',
-                fontSize: '16px',
-                '::placeholder': {
-                    color: '#aab7c4'
-                }
-            },
-            invalid: {
-                color: '#fa755a',
-                iconColor: '#fa755a'
-            }
-        };
-
-        // Create and mount individual card elements with custom styling
-        const cardNumber = elements.create('cardNumber', {style: style});
-        const cardExpiry = elements.create('cardExpiry', {style: style});
-        const cardCvc = elements.create('cardCvc', {style: style});
-
-        cardNumber.mount('#card-number-element');
-        cardExpiry.mount('#card-expiry-element');
-        cardCvc.mount('#card-cvc-element');
-
-        // Handle form submission
-        const form = document.getElementById('payment-form');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            
-            // Show loading state
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-
-            try {
-                // Create Stripe token for the card
-                const {token, error} = await stripe.createToken(cardNumber);
-
-                if (error) {
-                    // Handle validation errors
-                    const errorElement = document.getElementById('card-number-errors');
-                    errorElement.textContent = error.message;
-                    errorElement.style.display = 'block';
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
-                    return;
-                }
-
-                // Send payment data to server
-                const response = await fetch('/api/payment/process', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        token: token.id,
-                        amount: document.getElementById('amount').value,
-                        accountName: document.getElementById('account-name').value,
-                        accountNumber: document.getElementById('account-number').value
-                    })
+        // First get the publishable key from the server
+        fetch('/api/payment/config')
+            .then(response => response.json())
+            .then(config => {
+                // Initialize Stripe with the publishable key from server
+                const stripe = Stripe(config.publishableKey);
+                
+                // Configure Stripe Elements with custom font
+                const elements = stripe.elements({
+                    fonts: [
+                        {
+                            cssSrc: 'https://fonts.googleapis.com/css?family=Source+Code+Pro',
+                        },
+                    ],
                 });
 
-                const result = await response.json();
+                // Define custom styling for Stripe Elements
+                const style = {
+                    base: {
+                        color: '#32325d',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        fontSize: '16px',
+                        '::placeholder': {
+                            color: '#aab7c4'
+                        }
+                    },
+                    invalid: {
+                        color: '#fa755a',
+                        iconColor: '#fa755a'
+                    }
+                };
 
-                // Handle response and show appropriate message
-                const alertsDiv = document.getElementById('payment-alerts');
-                alertsDiv.innerHTML = ''; // Clear previous alerts
+                // Create and mount individual card elements with custom styling
+                const cardNumber = elements.create('cardNumber', {style: style});
+                const cardExpiry = elements.create('cardExpiry', {style: style});
+                const cardCvc = elements.create('cardCvc', {style: style});
 
-                const alertDiv = document.createElement('div');
-                if (result.success) {
-                    // Payment successful
-                    alertDiv.className = 'alert alert-success';
-                    alertDiv.textContent = result.message || 'Payment successful!';
-                    // Reset form and clear card fields
-                    form.reset();
-                    cardNumber.clear();
-                    cardExpiry.clear();
-                    cardCvc.clear();
-                } else {
-                    // Payment failed
-                    alertDiv.className = 'alert alert-danger';
-                    alertDiv.textContent = result.message || 'Payment failed. Please try again.';
-                }
-                alertsDiv.appendChild(alertDiv);
-            } catch (error) {
-                // Handle unexpected errors
-                console.error('Error:', error);
+                cardNumber.mount('#card-number-element');
+                cardExpiry.mount('#card-expiry-element');
+                cardCvc.mount('#card-cvc-element');
+
+                // Handle form submission
+                const form = document.getElementById('payment-form');
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    
+                    // Show loading state
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+
+                    try {
+                        // Create Stripe token for the card
+                        const {token, error} = await stripe.createToken(cardNumber);
+
+                        if (error) {
+                            // Handle validation errors
+                            const errorElement = document.getElementById('card-number-errors');
+                            errorElement.textContent = error.message;
+                            errorElement.style.display = 'block';
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
+                            return;
+                        }
+
+                        // Send payment data to server
+                        const response = await fetch('/api/payment/process', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                token: token.id,
+                                amount: document.getElementById('amount').value,
+                                accountName: document.getElementById('account-name').value,
+                                accountNumber: document.getElementById('account-number').value
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        // Handle response and show appropriate message
+                        const alertsDiv = document.getElementById('payment-alerts');
+                        alertsDiv.innerHTML = ''; // Clear previous alerts
+
+                        const alertDiv = document.createElement('div');
+                        if (result.success) {
+                            // Payment successful
+                            alertDiv.className = 'alert alert-success';
+                            alertDiv.textContent = result.message || 'Payment successful!';
+                            // Reset form and clear card fields
+                            form.reset();
+                            cardNumber.clear();
+                            cardExpiry.clear();
+                            cardCvc.clear();
+                        } else {
+                            // Payment failed
+                            alertDiv.className = 'alert alert-danger';
+                            alertDiv.textContent = result.message || 'Payment failed. Please try again.';
+                        }
+                        alertsDiv.appendChild(alertDiv);
+                    } catch (error) {
+                        // Handle unexpected errors
+                        console.error('Error:', error);
+                        const alertsDiv = document.getElementById('payment-alerts');
+                        alertsDiv.innerHTML = '';
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger';
+                        alertDiv.textContent = 'An error occurred. Please try again.';
+                        alertsDiv.appendChild(alertDiv);
+                    } finally {
+                        // Reset button state
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading Stripe configuration:', error);
                 const alertsDiv = document.getElementById('payment-alerts');
-                alertsDiv.innerHTML = '';
                 const alertDiv = document.createElement('div');
                 alertDiv.className = 'alert alert-danger';
-                alertDiv.textContent = 'An error occurred. Please try again.';
+                alertDiv.textContent = 'Error loading payment system. Please try again later.';
                 alertsDiv.appendChild(alertDiv);
-            } finally {
-                // Reset button state
-                submitButton.disabled = false;
-                submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
-            }
-        });
+            });
     </script>
 </body>
 </html> 
