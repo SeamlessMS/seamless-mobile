@@ -5,7 +5,7 @@
       "src": "api/**/*.js",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 60
+        "maxDuration": 120
       }
     },
     {
@@ -16,7 +16,14 @@
   "routes": [
     {
       "src": "/api/submit-ticket",
-      "dest": "/api/submit-ticket.js"
+      "dest": "/api/submit-ticket.js",
+      "methods": ["POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Max-Age": "86400"
+      }
     },
     {
       "src": "/(.*)",
@@ -34,7 +41,7 @@
   },
   "git": {
     "deploymentEnabled": {
-      "master": true
+      "main": true
     }
   }
 } 

@@ -168,8 +168,8 @@ async function createTicket(contactId, ticketData) {
     }
 }
 
-module.exports = async (req, res) => {
-    // Enable CORS
+export default async function handler(req, res) {
+    // Add CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -179,7 +179,7 @@ module.exports = async (req, res) => {
     );
     res.setHeader('X-API-Version', VERSION);
 
-    // Handle OPTIONS request for CORS
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
         res.status(200).end();
         return;
@@ -187,7 +187,14 @@ module.exports = async (req, res) => {
 
     // Only allow POST requests
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        return res.status(405).json({
+            success: false,
+            message: 'Method not allowed',
+            error: {
+                errorCode: 'METHOD_NOT_ALLOWED',
+                message: 'Only POST requests are allowed'
+            }
+        });
     }
 
     try {
@@ -195,31 +202,44 @@ module.exports = async (req, res) => {
         console.log('Headers:', req.headers);
         console.log('Body:', req.body);
 
-        // Parse JSON body if it's a string
+        // Handle different content types
         let body = req.body;
+        const contentType = req.headers['content-type'] || '';
+        console.log('Content-Type:', contentType);
+
+        // Accept any content type and try to parse the body
         if (typeof body === 'string') {
             try {
                 body = JSON.parse(body);
             } catch (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid JSON format',
-                    error: {
-                        errorCode: 'INVALID_JSON',
-                        message: 'The request body must be valid JSON'
-                    }
-                });
+                // If JSON parsing fails, assume it's form data
+                console.log('Body is not JSON, treating as form data');
             }
+        }
+
+        // Extract form data fields if they exist
+        if (req.body && typeof req.body === 'object') {
+            body = {
+                employeeName: req.body.employeeName || body.employeeName,
+                email: req.body.email || body.email,
+                phone: req.body.phone || body.phone,
+                serviceType: req.body.serviceType || body.serviceType,
+                followUpContact: req.body.followUpContact || body.followUpContact,
+                issueDescription: req.body.issueDescription || body.issueDescription,
+                priority: req.body.priority || body.priority,
+                attachments: req.body.attachments || body.attachments
+            };
         }
 
         // Ensure body is an object
         if (!body || typeof body !== 'object') {
+            console.error('Invalid body format:', body);
             return res.status(400).json({
                 success: false,
                 message: 'Invalid request body',
                 error: {
                     errorCode: 'INVALID_BODY',
-                    message: 'The request body must be a valid JSON object'
+                    message: 'The request body must contain valid data'
                 }
             });
         }
@@ -315,4 +335,4 @@ module.exports = async (req, res) => {
             }
         });
     }
-}; 
+} 
