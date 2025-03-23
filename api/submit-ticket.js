@@ -141,11 +141,11 @@ async function createTicket(contactId, ticketData) {
             phone: ticketData.phone || '',
             customFields: [
                 {
-                    name: 'Service Type',
+                    name: 'cf_service_type',
                     value: ticketData.serviceType || 'General Support'
                 },
                 {
-                    name: 'Follow-up Contact',
+                    name: 'cf_follow_up_contact',
                     value: ticketData.followUpContact || 'None provided'
                 }
             ]
