@@ -156,23 +156,71 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
+    <!-- Stripe Elements Custom Styling -->
+    <style>
+        /* Base styling for Stripe Elements */
+        .StripeElement {
+            background-color: white;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            height: 40px;
+            width: 100%;
+            box-shadow: 0 1px 3px 0 #e6ebf1;
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+        }
+
+        /* Focus state styling */
+        .StripeElement--focus {
+            box-shadow: 0 1px 3px 0 #cfd7df;
+        }
+
+        /* Invalid state styling */
+        .StripeElement--invalid {
+            border-color: #fa755a;
+        }
+
+        /* Autofill state styling */
+        .StripeElement--webkit-autofill {
+            background-color: #fefde5 !important;
+        }
+    </style>
     <script>
-        // Stripe configuration
-        window.CONFIG = {
-            stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_your_test_key_here'
+        // Initialize Stripe with test publishable key
+        const stripe = Stripe('pk_test_51OvCwbGXXB5SZbPHHVCPKqHDTFJhVBLGKWVWGkLHw8ieejOLWAx4OKTBpDQMXqZBqVvYTT2od1Hs7YPJFGTGhHxF00J5KZzD1R');
+        
+        // Configure Stripe Elements with custom font
+        const elements = stripe.elements({
+            fonts: [
+                {
+                    cssSrc: 'https://fonts.googleapis.com/css?family=Source+Code+Pro',
+                },
+            ],
+        });
+
+        // Define custom styling for Stripe Elements
+        const style = {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
         };
-    </script>
-    <script>
-        // Initialize Stripe
-        const stripe = Stripe(window.CONFIG?.stripePublishableKey || '');
-        const elements = stripe.elements();
 
-        // Create card elements
-        const cardNumber = elements.create('cardNumber');
-        const cardExpiry = elements.create('cardExpiry');
-        const cardCvc = elements.create('cardCvc');
+        // Create and mount individual card elements with custom styling
+        const cardNumber = elements.create('cardNumber', {style: style});
+        const cardExpiry = elements.create('cardExpiry', {style: style});
+        const cardCvc = elements.create('cardCvc', {style: style});
 
-        // Mount card elements
         cardNumber.mount('#card-number-element');
         cardExpiry.mount('#card-expiry-element');
         cardCvc.mount('#card-cvc-element');
@@ -181,15 +229,28 @@
         const form = document.getElementById('payment-form');
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
 
-            const {token, error} = await stripe.createToken(cardNumber);
+            try {
+                // Create Stripe token for the card
+                const {token, error} = await stripe.createToken(cardNumber);
 
-            if (error) {
-                const errorElement = document.getElementById('card-number-errors');
-                errorElement.textContent = error.message;
-            } else {
-                // Send token to your server
-                fetch('/api/payment/process', {
+                if (error) {
+                    // Handle validation errors
+                    const errorElement = document.getElementById('card-number-errors');
+                    errorElement.textContent = error.message;
+                    errorElement.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
+                    return;
+                }
+
+                // Send payment data to server
+                const response = await fetch('/api/payment/process', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -200,29 +261,43 @@
                         accountName: document.getElementById('account-name').value,
                         accountNumber: document.getElementById('account-number').value
                     })
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        const alertDiv = document.createElement('div');
-                        alertDiv.className = 'alert alert-success';
-                        alertDiv.textContent = result.message || 'Payment successful!';
-                        document.getElementById('payment-alerts').appendChild(alertDiv);
-                        form.reset();
-                    } else {
-                        const alertDiv = document.createElement('div');
-                        alertDiv.className = 'alert alert-danger';
-                        alertDiv.textContent = result.message || 'Payment failed. Please try again.';
-                        document.getElementById('payment-alerts').appendChild(alertDiv);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-danger';
-                    alertDiv.textContent = 'An error occurred. Please try again.';
-                    document.getElementById('payment-alerts').appendChild(alertDiv);
                 });
+
+                const result = await response.json();
+
+                // Handle response and show appropriate message
+                const alertsDiv = document.getElementById('payment-alerts');
+                alertsDiv.innerHTML = ''; // Clear previous alerts
+
+                const alertDiv = document.createElement('div');
+                if (result.success) {
+                    // Payment successful
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.textContent = result.message || 'Payment successful!';
+                    // Reset form and clear card fields
+                    form.reset();
+                    cardNumber.clear();
+                    cardExpiry.clear();
+                    cardCvc.clear();
+                } else {
+                    // Payment failed
+                    alertDiv.className = 'alert alert-danger';
+                    alertDiv.textContent = result.message || 'Payment failed. Please try again.';
+                }
+                alertsDiv.appendChild(alertDiv);
+            } catch (error) {
+                // Handle unexpected errors
+                console.error('Error:', error);
+                const alertsDiv = document.getElementById('payment-alerts');
+                alertsDiv.innerHTML = '';
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.textContent = 'An error occurred. Please try again.';
+                alertsDiv.appendChild(alertDiv);
+            } finally {
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-lock me-2"></i>Pay Securely';
             }
         });
     </script>

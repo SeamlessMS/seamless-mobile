@@ -47,7 +47,7 @@ async function createPaymentTicket(paymentDetails) {
             priority: 'Low',
             category: 'Payment',
             channel: 'Web',
-            status: 'Closed',
+            status: 'Open',
             customFields: {
                 cf_payment_amount: paymentDetails.amount,
                 cf_transaction_id: paymentDetails.chargeId,
