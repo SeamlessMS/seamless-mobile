@@ -258,11 +258,19 @@ export default async function handler(req, res) {
 
         // Create or get contact
         const contactData = {
-            firstName: employeeName.split(' ')[0],
-            lastName: employeeName.split(' ').slice(1).join(' '),
+            firstName: employeeName.trim().split(/\s+/)[0] || 'Unknown',
+            lastName: employeeName.trim().split(/\s+/).slice(1).join(' ') || 'User',
             email: email,
             phone: phone
         };
+
+        console.log('Creating contact with data:', {
+            originalName: employeeName,
+            firstName: contactData.firstName,
+            lastName: contactData.lastName,
+            email: contactData.email,
+            phone: contactData.phone
+        });
 
         const contact = await getOrCreateContact(email, contactData);
         if (!contact || !contact.id) {
