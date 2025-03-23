@@ -99,16 +99,14 @@ async function testTicketSubmission(retryCount = 0, maxRetries = 3) {
         console.log('Sending request with data:', data);
         console.log('Content-Type:', 'application/json');
 
-        const response = await axios.post('https://seamless-mobile11.vercel.app/api/submit-ticket', data, {
+        const response = await axios({
+            method: 'post',
+            url: 'https://seamless-mobile11.vercel.app/api/submit-ticket',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            transformRequest: [function (data) {
-                return JSON.stringify(data);
-            }],
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity
+            data: data
         });
 
         console.log('Response:', response.data);
