@@ -227,7 +227,12 @@ export default async function handler(req, res) {
         body: req.body,
         env: {
             nodeEnv: process.env.NODE_ENV,
-            vercelEnv: process.env.VERCEL_ENV
+            vercelEnv: process.env.VERCEL_ENV,
+            hasOrgId: !!process.env.ZOHO_ORG_ID,
+            hasDepartmentId: !!process.env.ZOHO_DEPARTMENT_ID,
+            hasClientId: !!process.env.ZOHO_CLIENT_ID,
+            hasClientSecret: !!process.env.ZOHO_CLIENT_SECRET,
+            hasRefreshToken: !!process.env.ZOHO_REFRESH_TOKEN
         }
     });
 
@@ -237,9 +242,27 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log('Incoming request details:');
-        console.log('Headers:', req.headers);
-        console.log('Body:', req.body);
+        // Validate environment variables
+        const requiredEnvVars = [
+            'ZOHO_ORG_ID',
+            'ZOHO_DEPARTMENT_ID',
+            'ZOHO_CLIENT_ID',
+            'ZOHO_CLIENT_SECRET',
+            'ZOHO_REFRESH_TOKEN'
+        ];
+
+        const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+        if (missingEnvVars.length > 0) {
+            console.error('Missing required environment variables:', missingEnvVars);
+            return res.status(500).json({
+                success: false,
+                message: 'Server configuration error',
+                error: {
+                    errorCode: 'MISSING_ENV_VARS',
+                    message: `Missing required environment variables: ${missingEnvVars.join(', ')}`
+                }
+            });
+        }
 
         // Handle different content types
         let body = req.body;
@@ -251,8 +274,15 @@ export default async function handler(req, res) {
             try {
                 body = JSON.parse(body);
             } catch (error) {
-                // If JSON parsing fails, assume it's form data
-                console.log('Body is not JSON, treating as form data');
+                console.error('Failed to parse JSON body:', error);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid JSON in request body',
+                    error: {
+                        errorCode: 'INVALID_JSON',
+                        message: error.message
+                    }
+                });
             }
         }
 
@@ -272,7 +302,7 @@ export default async function handler(req, res) {
         // Ensure body is an object
         if (!body || typeof body !== 'object') {
             console.error('Invalid body format:', body);
-            sendCorsResponse(res, 400, {
+            return res.status(400).json({
                 success: false,
                 message: 'Invalid request body',
                 error: {
@@ -280,14 +310,13 @@ export default async function handler(req, res) {
                     message: 'The request body must contain valid data'
                 }
             });
-            return;
         }
 
         const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
 
         // Validate required fields
         if (!employeeName || !email || !issueDescription) {
-            sendCorsResponse(res, 400, {
+            return res.status(400).json({
                 success: false,
                 message: 'Missing required fields',
                 error: {
@@ -295,7 +324,6 @@ export default async function handler(req, res) {
                     message: 'Please provide employeeName, email, and issueDescription'
                 }
             });
-            return;
         }
 
         // Get or create contact with retry logic
@@ -314,6 +342,7 @@ export default async function handler(req, res) {
                 });
                 break;
             } catch (error) {
+                console.error(`Contact creation attempt ${retryCount + 1} failed:`, error);
                 retryCount++;
                 if (retryCount === maxRetries) throw error;
                 await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
@@ -341,6 +370,7 @@ export default async function handler(req, res) {
                 });
                 break;
             } catch (error) {
+                console.error(`Ticket creation attempt ${retryCount + 1} failed:`, error);
                 retryCount++;
                 if (retryCount === maxRetries) throw error;
                 await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
@@ -351,7 +381,7 @@ export default async function handler(req, res) {
             throw new Error('Failed to create ticket');
         }
 
-        sendCorsResponse(res, 200, {
+        return res.status(200).json({
             success: true,
             ticketId: ticket.id
         });
@@ -366,12 +396,13 @@ export default async function handler(req, res) {
             headers: error.response?.headers
         });
 
-        sendCorsResponse(res, 500, {
+        return res.status(500).json({
             success: false,
             message: 'Failed to submit ticket',
             error: {
                 errorCode: error.response?.data?.errorCode || 'INTERNAL_SERVER_ERROR',
-                message: error.response?.data?.message || error.message
+                message: error.response?.data?.message || error.message,
+                details: error.response?.data || error.stack
             }
         });
     }
