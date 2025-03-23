@@ -22,10 +22,11 @@
       }
     },
     {
-      "src": "/js/(.*)",
-      "dest": "/public/js/$1",
+      "src": "/js/ticket-submission.js",
+      "dest": "/public/js/ticket-submission.js",
       "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "application/javascript; charset=utf-8"
       }
     },
     {
@@ -43,11 +44,16 @@
       }
     },
     {
+      "src": "/ticket-submission",
+      "dest": "/public/ticket-submission.html"
+    },
+    {
+      "src": "/ticket-submission.html",
+      "dest": "/public/ticket-submission.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/public/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
+      "dest": "/public/$1"
     }
   ]
 } 

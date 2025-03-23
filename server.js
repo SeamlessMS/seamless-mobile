@@ -4,6 +4,7 @@ const cors = require('cors');
 const axios = require('axios');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 // Import routes
@@ -20,16 +21,52 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Log all requests
 app.use((req, res, next) => {
-  console.log('=== Incoming Request ===');
-  console.log('Method:', req.method);
-  console.log('Content-Type:', req.get('Content-Type'));
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  console.log('========================');
-  next();
+    console.log('=== Incoming Request ===');
+    console.log('Method:', req.method);
+    console.log('Path:', req.path);
+    console.log('Content-Type:', req.get('Content-Type'));
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    console.log('Working Directory:', process.cwd());
+    console.log('__dirname:', __dirname);
+    console.log('========================');
+    next();
 });
 
-app.use(express.static('public'));
+// Configure static file serving with absolute path and logging
+const publicPath = path.join(__dirname, 'public');
+console.log('Static files will be served from:', publicPath);
+
+// Static file middleware with custom logging
+app.use(express.static(publicPath, {
+    setHeaders: (res, filePath) => {
+        // Set caching headers for static files
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+        if (filePath.endsWith('.css')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+        if (filePath.match(/\.(jpg|jpeg|png|gif|svg)$/)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
+}));
+
+// Add a specific route for ticket-submission.js to debug any issues
+app.get('/js/ticket-submission.js', (req, res, next) => {
+    const jsPath = path.join(publicPath, 'js', 'ticket-submission.js');
+    console.log('Attempting to serve ticket-submission.js from:', jsPath);
+    
+    // Check if file exists
+    if (fs.existsSync(jsPath)) {
+        console.log('ticket-submission.js found at path');
+        res.sendFile(jsPath);
+    } else {
+        console.error('ticket-submission.js not found at path:', jsPath);
+        res.status(404).send('File not found');
+    }
+});
 
 // Mount routes
 app.use('/api', ticketRoutes);
@@ -371,25 +408,21 @@ app.get('/api/test-zoho', async (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Global error handler caught:', err);
     res.status(500).json({
-        success: false,
-        message: 'Internal Server Error',
-        error: err.message
+        error: 'Internal Server Error',
+        message: err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 });
 
-// Error handling for malformed JSON
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('Malformed JSON:', err);
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid JSON format',
-      error: 'The request body must be valid JSON'
+// Handle 404s
+app.use((req, res) => {
+    console.log('404 Not Found:', req.path);
+    res.status(404).json({
+        error: 'Not Found',
+        message: `Cannot ${req.method} ${req.path}`
     });
-  }
-  next();
 });
 
 // Only start the server if we're not in a serverless environment
