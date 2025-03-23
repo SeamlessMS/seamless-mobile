@@ -9,6 +9,23 @@ let tokenCache = {
     expiresAt: null
 };
 
+// CORS headers
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Max-Age': '86400',
+    'Content-Type': 'application/json'
+};
+
+// Helper function to send CORS response
+function sendCorsResponse(res, statusCode, body) {
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+        res.setHeader(key, value);
+    });
+    res.status(statusCode).json(body);
+}
+
 // Get access token function
 async function getAccessToken(retryCount = 0, maxRetries = 3) {
     try {
@@ -169,25 +186,15 @@ async function createTicket(contactId, ticketData) {
 }
 
 export default async function handler(req, res) {
-    // Add CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
-    res.setHeader('X-API-Version', VERSION);
-
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
+        sendCorsResponse(res, 200, {});
         return;
     }
 
     // Only allow POST requests
     if (req.method !== 'POST') {
-        return res.status(405).json({
+        sendCorsResponse(res, 405, {
             success: false,
             message: 'Method not allowed',
             error: {
@@ -195,6 +202,7 @@ export default async function handler(req, res) {
                 message: 'Only POST requests are allowed'
             }
         });
+        return;
     }
 
     try {
@@ -226,15 +234,14 @@ export default async function handler(req, res) {
                 serviceType: req.body.serviceType || body.serviceType,
                 followUpContact: req.body.followUpContact || body.followUpContact,
                 issueDescription: req.body.issueDescription || body.issueDescription,
-                priority: req.body.priority || body.priority,
-                attachments: req.body.attachments || body.attachments
+                priority: req.body.priority || body.priority
             };
         }
 
         // Ensure body is an object
         if (!body || typeof body !== 'object') {
             console.error('Invalid body format:', body);
-            return res.status(400).json({
+            sendCorsResponse(res, 400, {
                 success: false,
                 message: 'Invalid request body',
                 error: {
@@ -242,13 +249,14 @@ export default async function handler(req, res) {
                     message: 'The request body must contain valid data'
                 }
             });
+            return;
         }
 
         const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
 
         // Validate required fields
         if (!employeeName || !email || !issueDescription) {
-            return res.status(400).json({
+            sendCorsResponse(res, 400, {
                 success: false,
                 message: 'Missing required fields',
                 error: {
@@ -256,6 +264,7 @@ export default async function handler(req, res) {
                     message: 'Please provide employeeName, email, and issueDescription'
                 }
             });
+            return;
         }
 
         // Get or create contact with retry logic
@@ -311,7 +320,7 @@ export default async function handler(req, res) {
             throw new Error('Failed to create ticket');
         }
 
-        return res.status(200).json({
+        sendCorsResponse(res, 200, {
             success: true,
             ticketId: ticket.id
         });
@@ -326,7 +335,7 @@ export default async function handler(req, res) {
             headers: error.response?.headers
         });
 
-        return res.status(500).json({
+        sendCorsResponse(res, 500, {
             success: false,
             message: 'Failed to submit ticket',
             error: {
