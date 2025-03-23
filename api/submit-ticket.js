@@ -12,18 +12,35 @@ let tokenCache = {
 // CORS headers
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Api-Version',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
-    'Content-Type': 'application/json'
+    'Access-Control-Expose-Headers': 'Content-Length, X-API-Version'
 };
 
 // Helper function to send CORS response
 function sendCorsResponse(res, statusCode, body) {
+    // Set CORS headers
     Object.entries(corsHeaders).forEach(([key, value]) => {
         res.setHeader(key, value);
     });
-    res.status(statusCode).json(body);
+
+    // Set API version header
+    res.setHeader('X-API-Version', VERSION);
+
+    // Set content type for JSON responses
+    if (body) {
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    }
+
+    if (statusCode === 200 && !body) {
+        // Handle OPTIONS request
+        res.status(statusCode).end();
+    } else {
+        // Handle normal response with proper content type
+        res.status(statusCode).json(body);
+    }
 }
 
 // Get access token function
@@ -186,9 +203,18 @@ async function createTicket(contactId, ticketData) {
 }
 
 export default async function handler(req, res) {
+    // Log request details for debugging
+    console.log('Request details:', {
+        method: req.method,
+        headers: req.headers,
+        url: req.url,
+        origin: req.headers.origin || 'No origin',
+        body: typeof req.body === 'string' ? 'String body' : req.body
+    });
+
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
-        sendCorsResponse(res, 200, {});
+        sendCorsResponse(res, 200);
         return;
     }
 
