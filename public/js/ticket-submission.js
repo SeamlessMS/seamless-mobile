@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // API endpoint configuration
     const API_URL = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000/api/submit-ticket'
-        : 'https://seamless-mobile.vercel.app/api/submit-ticket';
+        : 'https://www.seamlessms.net/api/submit-ticket';
     
     console.log('API Endpoint:', API_URL);
     
