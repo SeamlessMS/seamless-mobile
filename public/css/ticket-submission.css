@@ -7,39 +7,48 @@
 }
 
 .service-select option {
-    padding-left: 40px;
+    padding: 8px 8px 8px 40px;
     background-repeat: no-repeat;
     background-position: 10px center;
     background-size: 24px;
+    line-height: 24px;
 }
 
-/* Service Type Icons */
-.service-select[value="Apple"] {
-    background-image: url('../images/services/apple.png');
+/* Service icons */
+.service-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    filter: brightness(0); /* Make icons black by default */
 }
 
-.service-select[value="Android"] {
-    background-image: url('../images/services/android.png');
+/* Brand-specific colors on hover */
+.service-select option[value="Apple"]:hover .service-icon {
+    filter: none;
 }
 
-.service-select[value="Verizon"] {
-    background-image: url('../images/services/verizon.png');
+.service-select option[value="Android"]:hover .service-icon {
+    filter: none;
 }
 
-.service-select[value="AT&T"] {
-    background-image: url('../images/services/att.png');
+.service-select option[value="Verizon"]:hover .service-icon {
+    filter: none;
 }
 
-.service-select[value="T-Mobile"] {
-    background-image: url('../images/services/tmobile.png');
+.service-select option[value="AT&T"]:hover .service-icon {
+    filter: none;
 }
 
-.service-select[value="VoIP"] {
-    background-image: url('../images/services/voip.png');
+.service-select option[value="T-Mobile"]:hover .service-icon {
+    filter: none;
 }
 
-.service-select[value="Other"] {
-    background-image: url('../images/services/other.png');
+.service-select option[value="VoIP"]:hover .service-icon {
+    filter: none;
+}
+
+.service-select option[value="Other"]:hover .service-icon {
+    filter: none;
 }
 
 /* Default state */

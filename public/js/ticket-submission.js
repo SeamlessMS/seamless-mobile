@@ -16,13 +16,16 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let option of serviceOptions) {
         if (option.value) {  // Only add icons to non-empty options
             const icon = document.createElement('img');
-            icon.src = `images/services/${option.value.toLowerCase()}.png`;
+            icon.src = `images/services/${option.value.toLowerCase()}.svg`;
             icon.alt = option.text;
             icon.className = 'service-icon me-2';
-            icon.style.width = '20px';
-            icon.style.height = '20px';
+            icon.style.width = '24px';
+            icon.style.height = '24px';
+            icon.style.verticalAlign = 'middle';
+            icon.style.filter = 'brightness(0)'; // Make icons black by default
             // Add error handling for image loading
             icon.onerror = function() {
+                console.error(`Failed to load icon: ${icon.src}`);
                 this.style.display = 'none';
             };
             option.insertBefore(icon, option.firstChild);
@@ -167,8 +170,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const iconPath = selectedOption.getAttribute('data-icon');
         if (iconPath) {
             this.style.backgroundImage = `url('../images/services/${iconPath}')`;
+            this.style.backgroundSize = '24px';
+            this.style.backgroundPosition = '10px center';
+            this.style.paddingLeft = '40px';
         } else {
             this.style.backgroundImage = 'none';
+            this.style.paddingLeft = '';
         }
     });
 }); 
