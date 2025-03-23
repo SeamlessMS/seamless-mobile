@@ -120,7 +120,7 @@ async function getOrCreateContact(email, contactData) {
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json'
             },
             transformRequest: [(data) => {
@@ -193,7 +193,7 @@ async function createTicket(contactId, ticketData) {
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json; charset=UTF-8',
                 'Accept': 'application/json'
             },
             data: payload
