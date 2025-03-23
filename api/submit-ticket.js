@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 // Version number for deployment tracking
 const VERSION = '1.0.2';
