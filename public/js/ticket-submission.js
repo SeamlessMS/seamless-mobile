@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (result.success) {
                 // Show success message with ticket number
-                const successMessage = `Ticket submitted successfully!\n\nTicket Number: ${result.ticketNumber}\n\nWe will contact you shortly.`;
+                const successMessage = `Ticket submitted successfully!\n\nTicket ID: ${result.ticketId}\n\nWe will contact you shortly.`;
                 alert(successMessage);
                 ticketForm.reset();
             } else {
