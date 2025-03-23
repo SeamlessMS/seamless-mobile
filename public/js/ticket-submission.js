@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let option of serviceOptions) {
         if (option.value) {  // Only add icons to non-empty options
             const icon = document.createElement('img');
-            icon.src = `images/${option.value.toLowerCase()}-logo.png`;
+            icon.src = `images/services/${option.value.toLowerCase()}.png`;
             icon.alt = option.text;
             icon.className = 'service-icon me-2';
             icon.style.width = '20px';
