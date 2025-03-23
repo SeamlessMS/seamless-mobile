@@ -57,6 +57,9 @@
                         <div class="card-body">
                             <h2 class="text-center mb-4">Make a Payment</h2>
                             <form id="payment-form">
+                                <!-- Alert Messages -->
+                                <div id="payment-alerts" class="mb-4"></div>
+
                                 <!-- Account Information -->
                                 <div class="mb-4">
                                     <h4>Account Information</h4>
@@ -156,7 +159,7 @@
     <script>
         // Stripe configuration
         window.CONFIG = {
-            stripePublishableKey: 'your_stripe_publishable_key_here'
+            stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_your_test_key_here'
         };
     </script>
     <script>
@@ -201,15 +204,24 @@
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
-                        alert('Payment successful!');
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success';
+                        alertDiv.textContent = result.message || 'Payment successful!';
+                        document.getElementById('payment-alerts').appendChild(alertDiv);
                         form.reset();
                     } else {
-                        alert('Payment failed. Please try again.');
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger';
+                        alertDiv.textContent = result.message || 'Payment failed. Please try again.';
+                        document.getElementById('payment-alerts').appendChild(alertDiv);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger';
+                    alertDiv.textContent = 'An error occurred. Please try again.';
+                    document.getElementById('payment-alerts').appendChild(alertDiv);
                 });
             }
         });
