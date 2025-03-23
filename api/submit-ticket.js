@@ -163,7 +163,7 @@ async function createTicket(contactId, ticketData) {
         // Create a clean payload with only the required fields
         const payload = {
             subject: `${ticketData.serviceType || 'General'} Support Request - ${ticketData.employeeName}`,
-            description: `Issue Description: ${ticketData.issueDescription || 'No description provided'}\n\nFollow-up Contact: ${ticketData.followUpContact || 'None provided'}`,
+            description: `Issue Description: ${(ticketData.issueDescription || 'No description provided').trim()}\n\nFollow-up Contact: ${(ticketData.followUpContact || 'None provided').trim()}`,
             email: ticketData.email,
             departmentId: process.env.ZOHO_DEPARTMENT_ID,
             contactId: contactId,
@@ -173,12 +173,12 @@ async function createTicket(contactId, ticketData) {
             status: 'Open',
             phone: ticketData.phone || '',
             customFields: {
-                cf_service_type: ticketData.serviceType || 'General Support',
-                cf_follow_up_contact: ticketData.followUpContact || 'None provided'
+                cf_service_type: (ticketData.serviceType || 'General Support').trim(),
+                cf_follow_up_contact: (ticketData.followUpContact || 'None provided').trim()
             }
         };
 
-        console.log('Creating ticket with payload:', payload);
+        console.log('Creating ticket with payload:', JSON.stringify(payload, null, 2));
         
         // Make the request
         const response = await axios({
