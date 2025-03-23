@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Submitting form data:', formData);
             
             // Send data to server
-            const response = await fetch('/api/submit-ticket', {
+            const response = await fetch('https://www.seamlessms.net/api/submit-ticket', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

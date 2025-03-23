@@ -1,5 +1,4 @@
 const axios = require('axios');
-require('dotenv').config();
 
 // Token cache for the serverless function
 let tokenCache = {
