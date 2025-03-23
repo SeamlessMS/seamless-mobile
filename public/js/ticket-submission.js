@@ -27,41 +27,30 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
         
         try {
-            // Get form values
-            const employeeName = document.getElementById('employeeName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const serviceType = document.getElementById('serviceType').value;
-            const followUpContact = document.getElementById('followUpContact').value.trim();
-            const issueDescription = document.getElementById('issueDescription').value.trim();
-            const priority = document.getElementById('priority').value;
-
-            // Validate required fields
-            if (!employeeName || !email || !issueDescription) {
-                throw new Error('Please fill in all required fields: Employee Name, Email, and Issue Description');
-            }
-
-            // Format the data for the server
-            const formData = {
-                employeeName: employeeName,
-                email: email,
-                phone: phone,
-                serviceType: serviceType,
-                followUpContact: followUpContact,
-                issueDescription: issueDescription,
-                priority: priority
-            };
+            // Create FormData object
+            const formData = new FormData();
             
-            console.log('Submitting form data:', formData);
+            // Add form fields
+            formData.append('employeeName', document.getElementById('employeeName').value.trim());
+            formData.append('email', document.getElementById('email').value.trim());
+            formData.append('phone', document.getElementById('phone').value.trim());
+            formData.append('serviceType', document.getElementById('serviceType').value);
+            formData.append('followUpContact', document.getElementById('followUpContact').value.trim());
+            formData.append('issueDescription', document.getElementById('issueDescription').value.trim());
+            formData.append('priority', document.getElementById('priority').value);
+
+            // Add attachments if any
+            const attachments = document.getElementById('attachments').files;
+            for (let i = 0; i < attachments.length; i++) {
+                formData.append('attachments', attachments[i]);
+            }
+            
+            console.log('Submitting form data...');
             
             // Send data to server
             const response = await fetch('https://www.seamlessms.net/api/submit-ticket', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(formData)
+                body: formData // FormData automatically sets the correct Content-Type
             });
             
             let result;
