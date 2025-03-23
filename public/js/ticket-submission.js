@@ -2,10 +2,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const ticketForm = document.getElementById('ticketForm');
     const submitButton = ticketForm.querySelector('button[type="submit"]');
     
-    // API endpoint configuration
-    const API_URL = (window.CONFIG?.apiBaseUrl || window.location.origin) + '/api/submit-ticket';
+    // API endpoint configuration - Use relative URL
+    const API_URL = '/api/submit-ticket';
     
     console.log('API Endpoint:', API_URL);
+    console.log('Current origin:', window.location.origin);
     
     // Custom select with icons
     const serviceTypeSelect = document.getElementById('serviceType');
@@ -78,10 +79,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Network error details:', {
                     message: error.message,
                     error: error,
-                    url: API_URL
+                    url: API_URL,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    formData: formData
                 });
                 throw new Error('Unable to connect to the server. Please check your internet connection and try again. Error: ' + error.message);
             });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
             
             let result;
             try {

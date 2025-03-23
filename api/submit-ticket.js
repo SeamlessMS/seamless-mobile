@@ -11,7 +11,7 @@ let tokenCache = {
 
 // CORS headers
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': '*',  // Allow all origins during development
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Api-Version',
     'Access-Control-Allow-Credentials': 'true',
@@ -203,32 +203,37 @@ async function createTicket(contactId, ticketData) {
 }
 
 export default async function handler(req, res) {
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.seamlessms.net');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
+
     // Log request details for debugging
     console.log('Request details:', {
         method: req.method,
         headers: req.headers,
         url: req.url,
-        origin: req.headers.origin || 'No origin',
-        body: typeof req.body === 'string' ? 'String body' : req.body
+        origin: req.headers.origin,
+        body: req.body,
+        env: {
+            nodeEnv: process.env.NODE_ENV,
+            vercelEnv: process.env.VERCEL_ENV
+        }
     });
-
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-        sendCorsResponse(res, 200);
-        return;
-    }
 
     // Only allow POST requests
     if (req.method !== 'POST') {
-        sendCorsResponse(res, 405, {
-            success: false,
-            message: 'Method not allowed',
-            error: {
-                errorCode: 'METHOD_NOT_ALLOWED',
-                message: 'Only POST requests are allowed'
-            }
-        });
-        return;
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {

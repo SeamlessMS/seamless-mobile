@@ -164,7 +164,7 @@
     <script src="js/dark-mode.js"></script>
     <script>
         // Initialize Stripe
-        const stripe = Stripe('your_publishable_key');
+        const stripe = Stripe(window.CONFIG?.stripePublishableKey || '');
         const elements = stripe.elements();
         const card = elements.create('card');
         card.mount('#card-element');
