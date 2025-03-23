@@ -114,13 +114,18 @@ async function getOrCreateContact(email, contactData) {
             throw new Error('Failed to get access token');
         }
 
+        // Create axios instance with default config
         const axiosInstance = axios.create({
             baseURL: 'https://desk.zoho.com/api/v1',
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            transformRequest: [(data) => {
+                return JSON.stringify(data);
+            }]
         });
 
         // Search for existing contact
@@ -181,15 +186,22 @@ async function createTicket(contactId, ticketData) {
 
         console.log('Creating ticket with payload:', payload);
         
-        // Make the request with explicit headers
-        const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
+        // Create axios instance with default config
+        const axiosInstance = axios.create({
+            baseURL: 'https://desk.zoho.com/api/v1',
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            }
+            },
+            transformRequest: [(data) => {
+                return JSON.stringify(data);
+            }]
         });
+
+        // Make the request
+        const response = await axiosInstance.post('/tickets', payload);
         
         console.log('Ticket created:', response.data);
         return response.data;
