@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const ticketForm = document.getElementById('ticketForm');
     const submitButton = ticketForm.querySelector('button[type="submit"]');
     
+    // API endpoint configuration
+    const API_URL = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000/api/submit-ticket'
+        : 'https://seamless-mobile.vercel.app/api/submit-ticket';
+    
+    console.log('API Endpoint:', API_URL);
+    
     // Custom select with icons
     const serviceTypeSelect = document.getElementById('serviceType');
     const serviceOptions = serviceTypeSelect.options;
@@ -57,18 +64,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             console.log('Submitting form data:', formData);
+            console.log('Submitting to URL:', API_URL);
             
             // Send data to server
-            const response = await fetch('/api/submit-ticket', {
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
-                body: JSON.stringify(formData),
-                credentials: 'same-origin'
+                mode: 'cors',
+                body: JSON.stringify(formData)
             }).catch(error => {
-                console.error('Network error:', error);
+                console.error('Network error details:', {
+                    message: error.message,
+                    error: error,
+                    url: API_URL
+                });
                 throw new Error('Unable to connect to the server. Please check your internet connection and try again. Error: ' + error.message);
             });
             
@@ -77,12 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 result = await response.json();
                 console.log('Server response:', result);
             } catch (jsonError) {
-                console.error('Failed to parse response:', jsonError);
+                console.error('Failed to parse response:', {
+                    error: jsonError,
+                    responseText: await response.text()
+                });
                 throw new Error('Invalid response from server. Please try again later. Error: ' + jsonError.message);
             }
             
             if (!response.ok) {
-                console.error('Server error:', result);
+                console.error('Server error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    result: result
+                });
                 let errorMessage = 'An error occurred while submitting your ticket.';
                 
                 if (result.error) {
