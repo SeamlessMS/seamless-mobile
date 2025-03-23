@@ -187,13 +187,55 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    // Check content type
+    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
+    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
+        return res.status(415).json({
+            success: false,
+            message: 'Unsupported media type',
+            error: {
+                errorCode: 'UNSUPPORTED_MEDIA_TYPE',
+                message: 'The given content type is not supported. Please provide the input Content-Type as application/json'
+            }
+        });
+    }
+
     try {
         console.log('Incoming request details:');
         console.log('Headers:', req.headers);
-        console.log('Content-Type:', req.headers['content-type'] || req.headers['Content-Type']);
+        console.log('Content-Type:', contentType);
         console.log('Body:', req.body);
 
-        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
+        // Parse JSON body if it's a string
+        let body = req.body;
+        if (typeof body === 'string') {
+            try {
+                body = JSON.parse(body);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid JSON format',
+                    error: {
+                        errorCode: 'INVALID_JSON',
+                        message: 'The request body must be valid JSON'
+                    }
+                });
+            }
+        }
+
+        // Ensure body is an object
+        if (!body || typeof body !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid request body',
+                error: {
+                    errorCode: 'INVALID_BODY',
+                    message: 'The request body must be a valid JSON object'
+                }
+            });
+        }
+
+        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
 
         // Validate required fields
         if (!employeeName || !email || !issueDescription) {
