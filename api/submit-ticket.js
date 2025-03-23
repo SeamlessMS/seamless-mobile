@@ -155,15 +155,6 @@ async function createTicket(contactId, ticketData) {
             throw new Error('Failed to get access token');
         }
 
-        const axiosInstance = axios.create({
-            baseURL: 'https://desk.zoho.com/api/v1',
-            headers: {
-                'Authorization': `Zoho-oauthtoken ${accessToken}`,
-                'orgId': process.env.ZOHO_ORG_ID,
-                'Content-Type': 'application/json'
-            }
-        });
-
         // Create a clean payload with only the required fields
         const payload = {
             subject: `${ticketData.serviceType || 'General'} Support Request - ${ticketData.employeeName}`,
@@ -189,11 +180,17 @@ async function createTicket(contactId, ticketData) {
         };
 
         console.log('Creating ticket with payload:', payload);
-        const response = await axiosInstance.post('/tickets', payload, {
+        
+        // Make the request with explicit headers
+        const response = await axios.post('https://desk.zoho.com/api/v1/tickets', payload, {
             headers: {
-                'Content-Type': 'application/json'
+                'Authorization': `Zoho-oauthtoken ${accessToken}`,
+                'orgId': process.env.ZOHO_ORG_ID,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
+        
         console.log('Ticket created:', response.data);
         return response.data;
     } catch (error) {
