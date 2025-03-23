@@ -6,6 +6,9 @@
     "test": "node tests/ticket-submission.test.js"
   },
   "dependencies": {
-    "puppeteer": "^24.4.0"
+    "axios": "^1.6.7",
+    "puppeteer": "^24.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
   }
 }
