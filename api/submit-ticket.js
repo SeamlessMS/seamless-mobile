@@ -186,22 +186,18 @@ async function createTicket(contactId, ticketData) {
 
         console.log('Creating ticket with payload:', payload);
         
-        // Create axios instance with default config
-        const axiosInstance = axios.create({
-            baseURL: 'https://desk.zoho.com/api/v1',
+        // Make the request
+        const response = await axios({
+            method: 'post',
+            url: 'https://desk.zoho.com/api/v1/tickets',
             headers: {
                 'Authorization': `Zoho-oauthtoken ${accessToken}`,
                 'orgId': process.env.ZOHO_ORG_ID,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            transformRequest: [(data) => {
-                return JSON.stringify(data);
-            }]
+            data: payload
         });
-
-        // Make the request
-        const response = await axiosInstance.post('/tickets', payload);
         
         console.log('Ticket created:', response.data);
         return response.data;
