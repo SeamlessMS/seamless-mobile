@@ -28,27 +28,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Create FormData object
-            const formData = new FormData();
+            const formData = {
+                employeeName: document.getElementById('employeeName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                serviceType: document.getElementById('serviceType').value,
+                followUpContact: document.getElementById('followUpContact').value.trim(),
+                issueDescription: document.getElementById('issueDescription').value.trim(),
+                priority: document.getElementById('priority').value
+            };
             
-            // Add form fields
-            formData.append('employeeName', document.getElementById('employeeName').value.trim());
-            formData.append('email', document.getElementById('email').value.trim());
-            formData.append('phone', document.getElementById('phone').value.trim());
-            formData.append('serviceType', document.getElementById('serviceType').value);
-            formData.append('followUpContact', document.getElementById('followUpContact').value.trim());
-            formData.append('issueDescription', document.getElementById('issueDescription').value.trim());
-            formData.append('priority', document.getElementById('priority').value);
-
             // Add attachments if any
             const attachments = document.getElementById('attachments').files;
             for (let i = 0; i < attachments.length; i++) {
-                formData.append('attachments', attachments[i]);
+                formData.attachments = attachments[i];
             }
             
             console.log('Submitting form data...');
             
             // Send data to server
-            const response = await fetch('/api/submit-ticket', {
+            const response = await fetch('https://seamless-mobile.vercel.app/api/submit-ticket', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
