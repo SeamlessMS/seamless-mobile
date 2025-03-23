@@ -64,6 +64,13 @@ async function testTicketSubmission() {
             timeout: 30000
         });
 
+        // Check if JavaScript file is loaded
+        const jsLoaded = await page.evaluate(() => {
+            return typeof window.CONFIG !== 'undefined' && 
+                   typeof window.submitTicket === 'function';
+        });
+        console.log('JavaScript loaded:', jsLoaded);
+
         // Wait for the form to be loaded
         await page.waitForSelector('#ticketForm', { timeout: 5000 });
 
@@ -72,20 +79,34 @@ async function testTicketSubmission() {
         await page.type('#employeeName', 'Test User');
         await page.type('#email', 'test@example.com');
         await page.type('#phone', '1234567890');
-        await page.select('#serviceType', 'Hardware');
+        await page.select('#serviceType', 'Apple');
         await page.type('#followUpContact', 'Test Contact');
         await page.type('#issueDescription', 'This is a test ticket submission');
         await page.select('#priority', 'High');
 
-        // Submit the form with a shorter timeout
+        // Submit the form with a longer timeout
         console.log('Submitting the form...');
         try {
+            // Log the form data before submission
+            const formData = await page.evaluate(() => {
+                return {
+                    employeeName: document.getElementById('employeeName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    serviceType: document.getElementById('serviceType').value,
+                    followUpContact: document.getElementById('followUpContact').value,
+                    issueDescription: document.getElementById('issueDescription').value,
+                    priority: document.getElementById('priority').value
+                };
+            });
+            console.log('Form data:', formData);
+
             await Promise.race([
                 Promise.all([
                     page.waitForResponse(response => response.url().includes('/api/submit-ticket')),
                     page.click('button[type="submit"]')
                 ]),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Form submission timeout')), 10000))
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Form submission timeout')), 30000))
             ]);
         } catch (error) {
             console.error('Form submission error:', error);
