@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.className = 'service-icon me-2';
             icon.style.width = '20px';
             icon.style.height = '20px';
+            // Add error handling for image loading
+            icon.onerror = function() {
+                this.style.display = 'none';
+            };
             option.insertBefore(icon, option.firstChild);
         }
     }
@@ -22,33 +26,37 @@ document.addEventListener('DOMContentLoaded', function() {
     ticketForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Validate form data before submission
+        const formData = {
+            employeeName: document.getElementById('employeeName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            serviceType: document.getElementById('serviceType').value,
+            followUpContact: document.getElementById('followUpContact').value.trim(),
+            issueDescription: document.getElementById('issueDescription').value.trim(),
+            priority: document.getElementById('priority').value
+        };
+
+        // Basic validation
+        if (!formData.employeeName || !formData.email || !formData.phone || !formData.serviceType || 
+            !formData.followUpContact || !formData.issueDescription) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+        
         // Disable submit button and show loading state
         submitButton.disabled = true;
         submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
         
         try {
-            // Create FormData object
-            const formData = {
-                employeeName: document.getElementById('employeeName').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                serviceType: document.getElementById('serviceType').value,
-                followUpContact: document.getElementById('followUpContact').value.trim(),
-                issueDescription: document.getElementById('issueDescription').value.trim(),
-                priority: document.getElementById('priority').value
-            };
-            
-            // Add attachments if any
-            const attachments = document.getElementById('attachments').files;
-            if (attachments.length > 0) {
-                formData.attachments = Array.from(attachments).map(file => ({
-                    name: file.name,
-                    type: file.type,
-                    size: file.size
-                }));
-            }
-            
-            console.log('Submitting form data...');
+            console.log('Submitting form data:', formData);
             
             // Send data to server
             const response = await fetch('https://seamless-mobile.vercel.app/api/submit-ticket', {
@@ -62,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let result;
             try {
                 result = await response.json();
+                console.log('Server response:', result);
             } catch (jsonError) {
                 console.error('Failed to parse response:', jsonError);
                 throw new Error('Invalid response from server. Please try again later.');
