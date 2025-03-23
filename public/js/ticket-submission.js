@@ -40,8 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add attachments if any
             const attachments = document.getElementById('attachments').files;
-            for (let i = 0; i < attachments.length; i++) {
-                formData.attachments = attachments[i];
+            if (attachments.length > 0) {
+                formData.attachments = Array.from(attachments).map(file => ({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                }));
             }
             
             console.log('Submitting form data...');
