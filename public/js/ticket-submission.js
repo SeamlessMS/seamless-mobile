@@ -160,4 +160,15 @@ document.addEventListener('DOMContentLoaded', function() {
             submitButton.innerHTML = 'Submit Ticket';
         }
     });
+
+    // Update service type dropdown icon
+    document.getElementById('serviceType').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const iconPath = selectedOption.getAttribute('data-icon');
+        if (iconPath) {
+            this.style.backgroundImage = `url('../images/services/${iconPath}')`;
+        } else {
+            this.style.backgroundImage = 'none';
+        }
+    });
 }); 

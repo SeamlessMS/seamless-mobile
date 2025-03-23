@@ -1,0 +1,48 @@
+/* Service Type Dropdown Styling */
+.service-select {
+    padding-left: 40px;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 24px;
+}
+
+.service-select option {
+    padding-left: 40px;
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 24px;
+}
+
+/* Service Type Icons */
+.service-select[value="Apple"] {
+    background-image: url('../images/services/apple.png');
+}
+
+.service-select[value="Android"] {
+    background-image: url('../images/services/android.png');
+}
+
+.service-select[value="Verizon"] {
+    background-image: url('../images/services/verizon.png');
+}
+
+.service-select[value="AT&T"] {
+    background-image: url('../images/services/att.png');
+}
+
+.service-select[value="T-Mobile"] {
+    background-image: url('../images/services/tmobile.png');
+}
+
+.service-select[value="VoIP"] {
+    background-image: url('../images/services/voip.png');
+}
+
+.service-select[value="Other"] {
+    background-image: url('../images/services/other.png');
+}
+
+/* Default state */
+.service-select[value=""] {
+    background-image: none;
+} 
