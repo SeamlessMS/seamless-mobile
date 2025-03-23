@@ -1,6 +1,6 @@
 // API endpoints
-const API_BASE_URL = 'http://localhost:3000';
-const AUTH_API_URL = 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || '/api/auth';
 
 // DOM Elements
 const loginForm = document.getElementById('loginFormElement');
@@ -20,7 +20,7 @@ async function handleLogin(e) {
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch(`${AUTH_API_URL}/api/auth/login`, {
+        const response = await fetch(`${AUTH_API_URL}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -47,7 +47,7 @@ async function handleLogin(e) {
 // Load Tickets
 async function loadTickets() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+        const response = await fetch(`${API_BASE_URL}/tickets`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -97,7 +97,7 @@ async function handleNewTicket(e) {
     const priority = document.getElementById('priority').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+        const response = await fetch(`${API_BASE_URL}/tickets`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ async function handleNewTicket(e) {
 // Update Ticket Status
 async function updateTicketStatus(ticketId, status) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}/status`, {
+        const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

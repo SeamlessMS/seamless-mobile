@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use(express.static('public'));
 
 // Mount routes
-app.use('/api', require('./server/routes/router'));
+app.use('/api', ticketRoutes);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({

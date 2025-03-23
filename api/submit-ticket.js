@@ -130,27 +130,24 @@ async function createTicket(contactId, ticketData) {
 
         // Create a clean payload with only the required fields
         const payload = {
-            contactId: contactId,
+            subject: `${ticketData.serviceType || 'General'} Support Request - ${ticketData.employeeName}`,
+            description: `Issue Description: ${ticketData.issueDescription || 'No description provided'}\n\nFollow-up Contact: ${ticketData.followUpContact || 'None provided'}`,
+            email: ticketData.email,
             departmentId: process.env.ZOHO_DEPARTMENT_ID,
-            subject: `${ticketData.serviceType} Support Request`,
-            description: `
-                Employee Name: ${ticketData.employeeName}
-                Email: ${ticketData.email}
-                Phone: ${ticketData.phone}
-                Service Type: ${ticketData.serviceType}
-                Follow-up Contact: ${ticketData.followUpContact}
-                Issue Description: ${ticketData.issueDescription}
-            `,
+            contactId: contactId,
             priority: ticketData.priority || 'Medium',
+            category: ticketData.serviceType || 'General Support',
+            channel: 'Web',
             status: 'Open',
+            phone: ticketData.phone || '',
             customFields: [
                 {
                     name: 'Service Type',
-                    value: ticketData.serviceType
+                    value: ticketData.serviceType || 'General Support'
                 },
                 {
                     name: 'Follow-up Contact',
-                    value: ticketData.followUpContact
+                    value: ticketData.followUpContact || 'None provided'
                 }
             ]
         };
@@ -190,55 +187,13 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Check content type
-    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
-    if (!contentType || !contentType.toLowerCase().includes('application/json')) {
-        return res.status(415).json({
-            success: false,
-            message: 'Unsupported media type',
-            error: {
-                errorCode: 'UNSUPPORTED_MEDIA_TYPE',
-                message: 'The given content type is not supported. Please provide the input Content-Type as application/json'
-            }
-        });
-    }
-
     try {
         console.log('Incoming request details:');
         console.log('Headers:', req.headers);
-        console.log('Content-Type:', contentType);
+        console.log('Content-Type:', req.headers['content-type'] || req.headers['Content-Type']);
         console.log('Body:', req.body);
 
-        // Parse JSON body if it's a string
-        let body = req.body;
-        if (typeof body === 'string') {
-            try {
-                body = JSON.parse(body);
-            } catch (error) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid JSON format',
-                    error: {
-                        errorCode: 'INVALID_JSON',
-                        message: 'The request body must be valid JSON'
-                    }
-                });
-            }
-        }
-
-        // Ensure body is an object
-        if (!body || typeof body !== 'object') {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid request body',
-                error: {
-                    errorCode: 'INVALID_BODY',
-                    message: 'The request body must be a valid JSON object'
-                }
-            });
-        }
-
-        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
+        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
 
         // Validate required fields
         if (!employeeName || !email || !issueDescription) {
