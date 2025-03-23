@@ -172,16 +172,10 @@ async function createTicket(contactId, ticketData) {
             channel: 'Web',
             status: 'Open',
             phone: ticketData.phone || '',
-            customFields: [
-                {
-                    name: 'cf_service_type',
-                    value: ticketData.serviceType || 'General Support'
-                },
-                {
-                    name: 'cf_follow_up_contact',
-                    value: ticketData.followUpContact || 'None provided'
-                }
-            ]
+            customFields: {
+                cf_service_type: ticketData.serviceType || 'General Support',
+                cf_follow_up_contact: ticketData.followUpContact || 'None provided'
+            }
         };
 
         console.log('Creating ticket with payload:', payload);
