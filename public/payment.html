@@ -189,8 +189,20 @@
     <script>
         // First get the publishable key from the server
         fetch('/api/payment/config')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(`Server error: ${err.message || response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
             .then(config => {
+                if (!config.publishableKey) {
+                    throw new Error('No publishable key received from server');
+                }
+                console.log('Stripe config loaded successfully');
+                
                 // Initialize Stripe with the publishable key from server
                 const stripe = Stripe(config.publishableKey);
                 
