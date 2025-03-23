@@ -3,9 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitButton = ticketForm.querySelector('button[type="submit"]');
     
     // API endpoint configuration
-    const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api/submit-ticket'
-        : 'https://www.seamlessms.net/api/submit-ticket';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.seamlessms.net/api/submit-ticket';
     
     console.log('API Endpoint:', API_URL);
     
