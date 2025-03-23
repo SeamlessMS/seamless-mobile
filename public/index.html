@@ -3,90 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seamless Mobile Services - Enterprise Mobility & Technology Management</title>
+    <title>Seamless Mobile Services - Enterprise Mobile Device Management Solutions</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #0066cc, #004999);
+            color: white;
+            padding: 80px 0;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #0066cc;
+        }
+        .platform-section {
+            background-color: #f8f9fa;
+            padding: 60px 0;
+        }
+        .platform-icon {
+            font-size: 4rem;
+            margin: 0 20px;
+            color: #666;
+        }
+        .carrier-logo {
+            height: 50px;
+            margin: 15px;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+        .carrier-logo:hover {
+            filter: grayscale(0%);
+        }
+        .stats-section {
+            background-color: #fff;
+            padding: 60px 0;
+        }
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        .testimonial-section {
+            background-color: #f8f9fa;
+            padding: 60px 0;
+        }
+        .testimonial-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .client-logo {
+            height: 60px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="index.html">Seamless Mobile Services</a>
+            <a class="navbar-brand" href="/">Seamless Mobile Services</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="services.html">Services</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.html">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contact.html">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="payment.html">Pay Bill</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-support-btn" href="ticket-submission.html">
-                            <i class="fas fa-headset"></i>Get Support
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services.html">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/payment.html">Pay Bill</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ticket-submission.html">Get Support</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login.html">Login</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="hero-section text-white text-center py-5">
+    <section class="hero-section">
         <div class="container">
-            <h1 class="display-4">Enterprise Mobility & Technology Management</h1>
-            <p class="lead">Streamline your business communications with our comprehensive mobility solutions</p>
-            <a href="contact.html" class="btn btn-primary btn-lg">Get Started</a>
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 mb-4">Enterprise Mobile Device Management Made Simple</h1>
+                    <p class="lead mb-4">Seamlessly manage your business mobile devices across multiple carriers and platforms. From procurement to retirement, we handle it all.</p>
+                    <div class="d-flex gap-3">
+                        <a href="/contact.html" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="/services.html" class="btn btn-outline-light btn-lg">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="images/hero-devices.png" alt="Enterprise Devices" class="img-fluid">
+                </div>
+            </div>
         </div>
-    </header>
+    </section>
 
-    <!-- Services Overview -->
-    <section class="services-overview py-5">
+    <!-- Platform Support Section -->
+    <section class="platform-section">
+        <div class="container text-center">
+            <h2 class="mb-5">Cross-Platform Device Management</h2>
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-4">
+                    <i class="fab fa-android platform-icon"></i>
+                    <i class="fab fa-apple platform-icon"></i>
+                    <h3 class="mt-4">iOS & Android Support</h3>
+                    <p>Unified management for all your mobile devices</p>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="carrier-logos">
+                        <img src="images/carrier-logos/verizon.png" alt="Verizon" class="carrier-logo">
+                        <img src="images/carrier-logos/att.png" alt="AT&T" class="carrier-logo">
+                        <img src="images/carrier-logos/tmobile.png" alt="T-Mobile" class="carrier-logo">
+                    </div>
+                    <h3 class="mt-4">Multi-Carrier Support</h3>
+                    <p>Seamless integration with major carriers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section class="features-section py-5">
         <div class="container">
-            <h2 class="text-center mb-5">Our Services</h2>
+            <h2 class="text-center mb-5">Comprehensive Device Management Solutions</h2>
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card feature-card">
                         <div class="card-body text-center">
-                            <i class="fas fa-mobile-alt fa-3x mb-3 text-primary"></i>
-                            <h3 class="card-title">Carrier Management</h3>
-                            <p class="card-text">Optimize your Verizon, AT&T, and T-Mobile services with our expert management and cost optimization solutions.</p>
+                            <i class="fas fa-mobile-alt feature-icon"></i>
+                            <h3>Device Lifecycle</h3>
+                            <p>End-to-end management from procurement to retirement</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card feature-card">
                         <div class="card-body text-center">
-                            <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
-                            <h3 class="card-title">Mobile Device Management</h3>
-                            <p class="card-text">Complete device lifecycle management including provisioning, repairs, and security solutions.</p>
+                            <i class="fas fa-shield-alt feature-icon"></i>
+                            <h3>Security & MDM</h3>
+                            <p>Advanced mobile device management and security solutions</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card feature-card">
                         <div class="card-body text-center">
-                            <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
-                            <h3 class="card-title">Technology Expense Management</h3>
-                            <p class="card-text">Comprehensive expense management and optimization across all your technology assets and services.</p>
+                            <i class="fas fa-sync feature-icon"></i>
+                            <h3>Quick Recovery</h3>
+                            <p>Rapid device replacement and data restoration</p>
                         </div>
                     </div>
                 </div>
@@ -94,45 +174,54 @@
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="features bg-light py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Why Choose Us</h2>
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container text-center">
             <div class="row">
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-check-circle text-primary me-3 mt-1"></i>
-                        <div>
-                            <h4>Cost Optimization</h4>
-                            <p>Reduce your technology expenses through expert carrier management and plan optimization.</p>
-                        </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-number">50k+</div>
+                    <div>Devices Managed</div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-number">99.9%</div>
+                    <div>Recovery Rate</div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-number">15min</div>
+                    <div>Response Time</div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-number">24/7</div>
+                    <div>Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonial-section">
+        <div class="container">
+            <h2 class="text-center mb-5">Trusted by Leading Businesses</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <img src="images/client-logos/client1.png" alt="Client 1" class="client-logo">
+                        <p>"Seamless Mobile Services has transformed how we manage our corporate devices. Their MDM solution is exceptional."</p>
+                        <strong>- CTO, Enterprise Solutions Inc.</strong>
                     </div>
                 </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-shield-alt text-primary me-3 mt-1"></i>
-                        <div>
-                            <h4>Enhanced Security</h4>
-                            <p>Protect your business with advanced security solutions and device management.</p>
-                        </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <img src="images/client-logos/client2.png" alt="Client 2" class="client-logo">
+                        <p>"The quick device recovery service has saved us countless hours of downtime. Highly recommended!"</p>
+                        <strong>- IT Director, Global Tech Ltd.</strong>
                     </div>
                 </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-tools text-primary me-3 mt-1"></i>
-                        <div>
-                            <h4>24/7 Support</h4>
-                            <p>Round-the-clock technical support and device management services.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-4">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-chart-bar text-primary me-3 mt-1"></i>
-                        <div>
-                            <h4>Analytics & Reporting</h4>
-                            <p>Detailed insights and reporting for better decision-making.</p>
-                        </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <img src="images/client-logos/client3.png" alt="Client 3" class="client-logo">
+                        <p>"Their multi-carrier management has simplified our operations and reduced costs significantly."</p>
+                        <strong>- Operations Manager, Innovation Corp</strong>
                     </div>
                 </div>
             </div>
@@ -140,16 +229,16 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section text-white text-center py-5">
-        <div class="container">
-            <h2>Ready to Optimize Your Business Communications?</h2>
-            <p class="lead">Contact us today for a free consultation</p>
-            <a href="contact.html" class="btn btn-light btn-lg">Contact Us</a>
+    <section class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h2 class="mb-4">Ready to Streamline Your Mobile Device Management?</h2>
+            <p class="lead mb-4">Let us handle the complexity while you focus on your business.</p>
+            <a href="/contact.html" class="btn btn-light btn-lg">Contact Us Today</a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4">
+    <footer class="bg-dark text-light py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
@@ -159,9 +248,9 @@
                 <div class="col-md-4">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        <li><a href="services.html" class="text-white">Services</a></li>
-                        <li><a href="about.html" class="text-white">About Us</a></li>
-                        <li><a href="contact.html" class="text-white">Contact</a></li>
+                        <li><a href="/services.html" class="text-light">Services</a></li>
+                        <li><a href="/about.html" class="text-light">About Us</a></li>
+                        <li><a href="/contact.html" class="text-light">Contact</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -173,47 +262,9 @@
                     </ul>
                 </div>
             </div>
-            <hr>
-            <div class="text-center">
-                <p class="mb-0">&copy; 2024 Seamless Mobile Services. All rights reserved.</p>
-            </div>
         </div>
     </footer>
 
-    <!-- Rebranding Popup -->
-    <div class="rebrand-popup-overlay" id="rebrandOverlay">
-        <div class="rebrand-popup">
-            <img src="images/trout-logo.png" alt="Trout Mobile Logo" class="rebrand-logo">
-            <h2 class="rebrand-title">Exciting News!</h2>
-            <h2 class="rebrand-title">Trout Mobile Joins Seamless Mobile Services</h2>
-            <p class="rebrand-message">We're pleased to announce that Trout Mobile is now part of Seamless Mobile Services. Together, we'll continue to provide exceptional enterprise mobility and technology management services with an expanded portfolio of solutions.</p>
-            <button class="btn btn-primary rebrand-button" onclick="closeRebrandPopup()">Continue to Site</button>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-
-        // Rebranding Popup
-        function closeRebrandPopup() {
-            document.getElementById('rebrandOverlay').style.display = 'none';
-            // Increment the popup count
-            let popupCount = parseInt(localStorage.getItem('rebrandPopupCount') || '0');
-            localStorage.setItem('rebrandPopupCount', (popupCount + 1).toString());
-        }
-
-        // Show popup after a short delay
-        setTimeout(() => {
-            const popupCount = parseInt(localStorage.getItem('rebrandPopupCount') || '0');
-            if (popupCount < 5) {
-                document.getElementById('rebrandOverlay').style.display = 'block';
-            }
-        }, 1000);
-    </script>
 </body>
 </html> 
