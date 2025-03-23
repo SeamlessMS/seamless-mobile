@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Version number for deployment tracking
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 
 // Token cache for the serverless function
 let tokenCache = {
@@ -203,21 +203,6 @@ async function createTicket(contactId, ticketData) {
 }
 
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.seamlessms.net');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
-
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
     // Log request details for debugging
     console.log('Request details:', {
         method: req.method,
@@ -236,9 +221,16 @@ export default async function handler(req, res) {
         }
     });
 
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        sendCorsResponse(res, 200);
+        return;
+    }
+
     // Only allow POST requests
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        sendCorsResponse(res, 405, { error: 'Method not allowed' });
+        return;
     }
 
     try {
@@ -254,156 +246,46 @@ export default async function handler(req, res) {
         const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
         if (missingEnvVars.length > 0) {
             console.error('Missing required environment variables:', missingEnvVars);
-            return res.status(500).json({
-                success: false,
-                message: 'Server configuration error',
-                error: {
-                    errorCode: 'MISSING_ENV_VARS',
-                    message: `Missing required environment variables: ${missingEnvVars.join(', ')}`
-                }
-            });
+            sendCorsResponse(res, 500, { error: 'Server configuration error' });
+            return;
         }
 
-        // Handle different content types
-        let body = req.body;
-        const contentType = req.headers['content-type'] || '';
-        console.log('Content-Type:', contentType);
-
-        // Accept any content type and try to parse the body
-        if (typeof body === 'string') {
-            try {
-                body = JSON.parse(body);
-            } catch (error) {
-                console.error('Failed to parse JSON body:', error);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid JSON in request body',
-                    error: {
-                        errorCode: 'INVALID_JSON',
-                        message: error.message
-                    }
-                });
-            }
+        // Validate request body
+        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = req.body;
+        if (!employeeName || !email || !phone || !serviceType || !followUpContact || !issueDescription) {
+            sendCorsResponse(res, 400, { error: 'Missing required fields' });
+            return;
         }
 
-        // Extract form data fields if they exist
-        if (req.body && typeof req.body === 'object') {
-            body = {
-                employeeName: req.body.employeeName || body.employeeName,
-                email: req.body.email || body.email,
-                phone: req.body.phone || body.phone,
-                serviceType: req.body.serviceType || body.serviceType,
-                followUpContact: req.body.followUpContact || body.followUpContact,
-                issueDescription: req.body.issueDescription || body.issueDescription,
-                priority: req.body.priority || body.priority
-            };
+        // Create or get contact
+        const contactData = {
+            firstName: employeeName.split(' ')[0],
+            lastName: employeeName.split(' ').slice(1).join(' '),
+            email: email,
+            phone: phone
+        };
+
+        const contact = await getOrCreateContact(email, contactData);
+        if (!contact || !contact.id) {
+            throw new Error('Failed to create or get contact');
         }
 
-        // Ensure body is an object
-        if (!body || typeof body !== 'object') {
-            console.error('Invalid body format:', body);
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid request body',
-                error: {
-                    errorCode: 'INVALID_BODY',
-                    message: 'The request body must contain valid data'
-                }
-            });
-        }
-
-        const { employeeName, email, phone, serviceType, followUpContact, issueDescription, priority } = body;
-
-        // Validate required fields
-        if (!employeeName || !email || !issueDescription) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields',
-                error: {
-                    errorCode: 'MISSING_FIELDS',
-                    message: 'Please provide employeeName, email, and issueDescription'
-                }
-            });
-        }
-
-        // Get or create contact with retry logic
-        let contact;
-        let retryCount = 0;
-        const maxRetries = 3;
-
-        while (retryCount < maxRetries) {
-            try {
-                const [firstName, lastName] = employeeName.split(' ');
-                contact = await getOrCreateContact(email, {
-                    firstName,
-                    lastName,
-                    email,
-                    phone
-                });
-                break;
-            } catch (error) {
-                console.error(`Contact creation attempt ${retryCount + 1} failed:`, error);
-                retryCount++;
-                if (retryCount === maxRetries) throw error;
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-            }
-        }
-
-        if (!contact) {
-            throw new Error('Failed to create contact');
-        }
-
-        // Create ticket with retry logic
-        let ticket;
-        retryCount = 0;
-
-        while (retryCount < maxRetries) {
-            try {
-                ticket = await createTicket(contact.id, {
-                    employeeName,
-                    email,
-                    phone,
-                    serviceType,
-                    followUpContact,
-                    issueDescription,
-                    priority
-                });
-                break;
-            } catch (error) {
-                console.error(`Ticket creation attempt ${retryCount + 1} failed:`, error);
-                retryCount++;
-                if (retryCount === maxRetries) throw error;
-                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
-            }
-        }
-
-        if (!ticket) {
+        // Create ticket
+        const ticket = await createTicket(contact.id, req.body);
+        if (!ticket || !ticket.id) {
             throw new Error('Failed to create ticket');
         }
 
-        return res.status(200).json({
+        sendCorsResponse(res, 200, {
             success: true,
-            ticketId: ticket.id
+            ticketId: ticket.id,
+            message: 'Ticket created successfully'
         });
-
     } catch (error) {
-        console.error('Error in submit-ticket function:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            response: error.response?.data,
-            status: error.response?.status,
-            headers: error.response?.headers
-        });
-
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to submit ticket',
-            error: {
-                errorCode: error.response?.data?.errorCode || 'INTERNAL_SERVER_ERROR',
-                message: error.response?.data?.message || error.message,
-                details: error.response?.data || error.stack
-            }
+        console.error('Error processing request:', error);
+        sendCorsResponse(res, 500, {
+            error: 'Internal server error',
+            message: error.message
         });
     }
 } 
