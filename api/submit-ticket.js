@@ -186,22 +186,6 @@ module.exports = async (req, res) => {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Check content type
-    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
-    if (!contentType) {
-        return res.status(415).json({
-            success: false,
-            message: 'Unsupported media type',
-            error: {
-                errorCode: 'UNSUPPORTED_MEDIA_TYPE',
-                message: 'Content-Type header is required'
-            }
-        });
-    }
-
-    // Log the content type for debugging
-    console.log('Content-Type:', contentType);
-
     try {
         console.log('Incoming request details:');
         console.log('Headers:', req.headers);
