@@ -103,14 +103,21 @@ export default async function handler(req, res) {
 
         // Create or get contact
         const contactData = {
-            firstName: contactName.split(' ')[0],
-            lastName: contactName.split(' ').slice(1).join(' '),
+            firstName: contactName.trim().split(/\s+/)[0] || 'Unknown',
+            lastName: contactName.trim().split(/\s+/).slice(1).join(' ') || 'User',
             email: email,
             phone: phone,
             cf_business_name: businessName
         };
 
-        console.log('Creating/getting contact with data:', contactData);
+        console.log('Creating/getting contact with data:', {
+            originalName: contactName,
+            firstName: contactData.firstName,
+            lastName: contactData.lastName,
+            email: contactData.email,
+            phone: contactData.phone,
+            businessName: contactData.cf_business_name
+        });
         const contact = await getOrCreateContact(email, contactData);
         console.log('Contact result:', contact);
 
@@ -120,11 +127,19 @@ export default async function handler(req, res) {
             email: email,
             phone: phone,
             serviceType: 'General Inquiry',
+            followUpContact: businessName,
             issueDescription: `Business: ${businessName}\nContact: ${contactName}\nEmail: ${email}\nPhone: ${phone}`,
             priority: 'Medium'
         };
 
-        console.log('Creating ticket with data:', ticketData);
+        console.log('Creating ticket with data:', {
+            employeeName: ticketData.employeeName,
+            email: ticketData.email,
+            phone: ticketData.phone,
+            serviceType: ticketData.serviceType,
+            followUpContact: ticketData.followUpContact,
+            priority: ticketData.priority
+        });
         const ticket = await createTicket(contact.id, ticketData);
         console.log('Ticket created:', ticket);
 
