@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { createTicket, getOrCreateContact } from './submit-ticket.js';
+import { getOrCreateContact, createTicket } from './submit-ticket.js';
 
 // Version number for deployment tracking
-const VERSION = '1.0.1';
+const API_VERSION = '1.0.1';
 
 // CORS headers
 const corsHeaders = {
@@ -22,7 +22,7 @@ function sendCorsResponse(res, statusCode, body) {
     });
 
     // Set API version header
-    res.setHeader('X-API-Version', VERSION);
+    res.setHeader('X-API-Version', API_VERSION);
 
     // Set content type for JSON responses
     if (body) {
