@@ -89,13 +89,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     statusText: response.statusText,
                     result: result
                 });
-                let errorMessage = 'An error occurred while submitting your contact request.';
+                let errorMessage = 'An error occurred while submitting your contact request. Please try again or contact us at cst@seamlessms.net.';
                 
                 if (result.error) {
                     if (typeof result.error === 'object') {
-                        errorMessage = `Error: ${JSON.stringify(result.error)}`;
+                        errorMessage = `Error: ${JSON.stringify(result.error)}. Please try again or contact us at cst@seamlessms.net`;
                     } else {
-                        errorMessage = `Error: ${result.error}`;
+                        errorMessage = `Error: ${result.error}. Please try again or contact us at cst@seamlessms.net`;
                     }
                 }
                 
@@ -120,15 +120,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 error: error
             });
             
-            let errorMessage = 'An error occurred while submitting your contact request.';
+            let errorMessage = 'An error occurred while submitting your contact request. Please try again or contact us at cst@seamlessms.net.';
             if (error.message) {
-                errorMessage = `Error: ${error.message}`;
+                errorMessage = `Error: ${error.message}. Please try again or contact us at cst@seamlessms.net`;
             } else if (error.error) {
-                errorMessage = `Error: ${error.error}`;
+                errorMessage = `Error: ${error.error}. Please try again or contact us at cst@seamlessms.net`;
             } else if (typeof error === 'object') {
-                errorMessage = `Error: ${JSON.stringify(error)}`;
+                errorMessage = `Error: ${JSON.stringify(error)}. Please try again or contact us at cst@seamlessms.net`;
             } else {
-                errorMessage = `Error: ${error.toString()}`;
+                errorMessage = `Error: ${error.toString()}. Please try again or contact us at cst@seamlessms.net`;
             }
             
             alert(errorMessage);

@@ -21,7 +21,9 @@
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "X-RateLimit-Limit": "100",
+        "X-RateLimit-Window": "60"
       }
     },
     {
@@ -31,7 +33,9 @@
       "headers": {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin, X-Api-Version"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "X-RateLimit-Limit": "10",
+        "X-RateLimit-Window": "60"
       }
     },
     {
