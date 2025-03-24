@@ -99,4 +99,6 @@ export const handler = async (event) => {
             version: VERSION
         });
     }
-}; 
+};
+
+export default handler; 
