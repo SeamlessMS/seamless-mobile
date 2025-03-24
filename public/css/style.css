@@ -1,6 +1,7 @@
 /* Global Styles */
 :root {
     --primary-color: #0d6efd;
+    --primary-color-dark: #0b5ed7;
     --secondary-color: #6c757d;
     --accent-color: #ffc107;
     --dark-color: #343a40;
@@ -87,11 +88,33 @@ body {
 
 /* Hero Section */
 .hero-section {
-    background: var(--gradient-primary);
-    padding: 8rem 0;
+    background: linear-gradient(135deg, #0066cc, #004999);
+    color: white;
+    padding: 80px 0;
     position: relative;
     overflow: hidden;
-    z-index: 1;
+}
+
+.hero-image {
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+    transform: scale(1.02);
+}
+
+.carrier-logo-small {
+    height: 30px;
+    margin: 0 5px;
+    filter: grayscale(100%) brightness(200%);
+    transition: all 0.3s ease;
+}
+
+.carrier-logo-small:hover {
+    filter: grayscale(0%) brightness(100%);
+    transform: scale(1.1);
 }
 
 .hero-section::before {
@@ -303,6 +326,18 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .hero-section {
+        padding: 60px 0;
+    }
+
+    .hero-image {
+        margin-top: 30px;
+    }
+
+    .carrier-logo-small {
+        height: 25px;
+    }
+
     .hero-section h1 {
         font-size: 2.5rem;
     }
@@ -428,6 +463,13 @@ footer .btn-primary {
     font-size: 24px;
     margin-bottom: 15px;
     color: #333;
+    line-height: 1.4;
+}
+
+.rebrand-title br {
+    display: block;
+    content: "";
+    margin-top: 5px;
 }
 
 .rebrand-message {
@@ -445,6 +487,32 @@ footer .btn-primary {
     transition: all 0.3s ease;
     min-width: 200px;
     margin-top: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    position: relative;
+    z-index: 10001;
+}
+
+.rebrand-button:hover {
+    background-color: var(--primary-color-dark);
+    transform: translateY(-2px);
+}
+
+.rebrand-button:active {
+    transform: translateY(0);
+}
+
+/* Ensure popup is always clickable */
+.rebrand-popup-overlay * {
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.rebrand-button {
+    pointer-events: auto;
+    -webkit-tap-highlight-color: #007bff;
+    touch-action: manipulation;
 }
 
 /* Mobile Optimizations */
@@ -454,10 +522,12 @@ footer .btn-primary {
         width: 95%;
         max-height: 90vh;
         overflow-y: auto;
+        margin: 20px;
     }
 
     .rebrand-title {
         font-size: 20px;
+        line-height: 1.3;
     }
 
     .rebrand-message {
@@ -471,6 +541,8 @@ footer .btn-primary {
         max-width: 300px;
         margin: 10px auto;
         display: block;
+        position: relative;
+        z-index: 10002;
     }
 
     .rebrand-logo {
@@ -482,10 +554,12 @@ footer .btn-primary {
 @media (max-width: 480px) {
     .rebrand-popup {
         padding: 15px;
+        margin: 10px;
     }
 
     .rebrand-title {
         font-size: 18px;
+        line-height: 1.3;
     }
 
     .rebrand-message {
@@ -497,16 +571,6 @@ footer .btn-primary {
         padding: 12px 20px;
         font-size: 15px;
     }
-}
-
-/* Ensure popup is always clickable */
-.rebrand-popup-overlay * {
-    -webkit-tap-highlight-color: transparent;
-}
-
-.rebrand-button {
-    -webkit-tap-highlight-color: #007bff;
-    touch-action: manipulation;
 }
 
 /* Service Type Icons */

@@ -201,7 +201,16 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <img src="/images/hero-image.jpg" alt="Enterprise mobility management dashboard showing carrier analytics and cost optimization" class="img-fluid rounded shadow-lg">
+                    <div class="position-relative">
+                        <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80" 
+                             alt="Modern iPhone with business apps and analytics dashboard" 
+                             class="img-fluid rounded shadow-lg hero-image">
+                        <div class="position-absolute top-0 end-0 m-4">
+                            <img src="/images/carrier-logos/verizon.png" alt="Verizon" class="carrier-logo-small">
+                            <img src="/images/carrier-logos/att.png" alt="AT&T" class="carrier-logo-small">
+                            <img src="/images/carrier-logos/tmobile.png" alt="T-Mobile" class="carrier-logo-small">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -384,9 +393,9 @@
     <div class="rebrand-popup-overlay" id="rebrandPopup">
         <div class="rebrand-popup">
             <img src="images/trout-logo.png" alt="Trout Mobile" class="rebrand-logo">
-            <h2 class="rebrand-title">Trout Mobile is now Seamless Mobile Services</h2>
+            <h2 class="rebrand-title">Trout Mobile is now<br>Seamless Mobile Services</h2>
             <p class="rebrand-message">We're excited to announce our rebranding to Seamless Mobile Services. While our name has changed, our commitment to providing exceptional mobile device management solutions remains the same. Experience the same great service with our enhanced brand identity.</p>
-            <button class="btn btn-primary rebrand-button" onclick="closeRebrandPopup()">Continue to Site</button>
+            <button class="btn btn-primary rebrand-button">Continue to Site</button>
         </div>
     </div>
 
@@ -408,6 +417,13 @@
             if (e.target === this) {
                 closeRebrandPopup();
             }
+        });
+
+        // Handle button click
+        document.querySelector('.rebrand-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeRebrandPopup();
         });
     </script>
 </body>
