@@ -166,6 +166,23 @@
             height: 60px;
             margin-bottom: 20px;
         }
+        .partner-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .partner-logo {
+            height: 40px;
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+        .partner-logo:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -359,6 +376,13 @@
     <!-- CTA Section -->
     <section class="cta-section text-white py-5">
         <div class="container text-center">
+            <div class="partner-logos mb-5">
+                <img src="/images/carrier-logos/verizon.png" alt="Verizon" class="partner-logo mx-3">
+                <img src="/images/carrier-logos/t-mobile.jpg" alt="T-Mobile" class="partner-logo mx-3">
+                <img src="/images/carrier-logos/att.png" alt="AT&T" class="partner-logo mx-3">
+                <i class="fab fa-apple fa-2x mx-3 text-white"></i>
+                <i class="fab fa-android fa-2x mx-3 text-white"></i>
+            </div>
             <h2 class="display-5 mb-4">Ready to Optimize Your Mobility Management?</h2>
             <p class="lead mb-4">Get a free audit of your current wireless setup and discover how we can help you save.</p>
             <a href="/ticket-submission.html" class="btn btn-light btn-lg">Request Your Free Audit</a>
