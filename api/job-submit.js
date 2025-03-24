@@ -7,8 +7,10 @@ const VERSION = '1.0.0';
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',
+    'X-RateLimit-Limit': '10',
+    'X-RateLimit-Window': '60'
 };
 
 // Helper function to send CORS response
@@ -67,7 +69,7 @@ export const handler = async (event) => {
                 New Job Application Received:
                 
                 Position: ${data.position}
-                Experience: ${data.experience} years
+                Experience: ${data.experience}
                 
                 Applicant Information:
                 Name: ${data.fullName}
