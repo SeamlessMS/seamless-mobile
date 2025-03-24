@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { createTicket } from './submit-ticket.js';
-import { getOrCreateContact } from './contact-submit.js';
+import { createTicket, getOrCreateContact } from './submit-ticket.js';
 
 const VERSION = '1.0.0';
 

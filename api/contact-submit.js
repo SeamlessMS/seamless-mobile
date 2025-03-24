@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { getOrCreateContact, createTicket } from './submit-ticket.js';
 
+// Re-export the getOrCreateContact function
+export { getOrCreateContact };
+
 // Version number for deployment tracking
 const API_VERSION = '1.0.1';
 
