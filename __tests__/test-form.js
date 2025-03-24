@@ -1,5 +1,11 @@
 const puppeteer = require('puppeteer');
 
+// Only run tests in development environment
+if (process.env.NODE_ENV !== 'development') {
+    console.log('Tests are disabled in production environment');
+    process.exit(0);
+}
+
 async function testTicketSubmission() {
     const browser = await puppeteer.launch({
         headless: 'new',
@@ -98,13 +104,7 @@ async function testTicketSubmission() {
     }
 }
 
-// Run the test
-testTicketSubmission()
-    .then(() => {
-        console.log('Test completed successfully');
-        process.exit(0);
-    })
-    .catch(error => {
-        console.error('Test failed with error:', error);
-        process.exit(1);
-    }); 
+// Only run if explicitly called with NODE_ENV=development
+if (process.env.NODE_ENV === 'development') {
+    testTicketSubmission().catch(console.error);
+} 

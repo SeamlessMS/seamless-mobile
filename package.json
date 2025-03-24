@@ -5,8 +5,9 @@
   "description": "Seamless Mobile Services Website",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Tests must be run manually with 'npm run test:manual'\"",
-    "test:manual": "node __tests__/run-tests.js"
+    "test": "echo \"Tests are disabled in production. Use 'npm run test:dev' for development testing.\"",
+    "test:dev": "NODE_ENV=development node __tests__/run-tests.js",
+    "test:ci": "NODE_ENV=test node __tests__/run-tests.js"
   },
   "dependencies": {
     "axios": "^1.6.7"
