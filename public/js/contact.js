@@ -28,12 +28,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Enhanced email validation
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(formData.email)) {
-            alert('Please enter a valid email address');
+            alert('Please enter a valid email address (e.g., example@domain.com)');
             return;
         }
+
+        // Phone number validation (US format)
+        const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+        if (!phoneRegex.test(formData.phone)) {
+            alert('Please enter a valid phone number (e.g., (555) 555-5555 or 555-555-5555)');
+            return;
+        }
+
+        // Format phone number consistently
+        formData.phone = formData.phone.replace(phoneRegex, '($1) $2-$3');
         
         // Disable submit button and show loading state
         submitButton.disabled = true;
