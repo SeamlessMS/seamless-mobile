@@ -52,7 +52,15 @@
     },
     {
       "src": "/api/job-submit",
-      "dest": "/api/job-submit.js"
+      "dest": "/api/job-submit.js",
+      "methods": ["POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "X-RateLimit-Limit": "10",
+        "X-RateLimit-Window": "60"
+      }
     },
     {
       "src": "/js/ticket-submission.js",

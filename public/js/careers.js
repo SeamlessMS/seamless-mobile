@@ -6,6 +6,18 @@
     const form = document.getElementById('jobInquiryForm');
     const submitButton = form.querySelector('button[type="submit"]');
     
+    // Phone number validation
+    function validatePhone(phone) {
+        const phoneRegex = /^\+?[\d\s-()]{10,}$/;
+        return phoneRegex.test(phone);
+    }
+
+    // Email validation
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
     // Add loading state to button
     function setLoading(isLoading) {
         submitButton.disabled = isLoading;
@@ -43,24 +55,51 @@
         event.preventDefault();
         event.stopPropagation();
 
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
+        // Get form data
+        const formData = new FormData(form);
+        const data = {
+            fullName: formData.get('fullName'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            position: formData.get('position'),
+            experience: formData.get('experience'),
+            message: formData.get('message')
+        };
+
+        // Validate fields
+        if (!data.fullName.trim()) {
+            showError('Please enter your full name.');
+            return;
+        }
+
+        if (!validateEmail(data.email)) {
+            showError('Please enter a valid email address.');
+            return;
+        }
+
+        if (!validatePhone(data.phone)) {
+            showError('Please enter a valid phone number (10 digits minimum).');
+            return;
+        }
+
+        if (!data.position) {
+            showError('Please select a position.');
+            return;
+        }
+
+        if (!data.experience) {
+            showError('Please select your years of experience.');
+            return;
+        }
+
+        if (!data.message.trim()) {
+            showError('Please tell us why you\'re interested in joining our team.');
             return;
         }
 
         setLoading(true);
 
         try {
-            const formData = new FormData(form);
-            const data = {
-                fullName: formData.get('fullName'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                position: formData.get('position'),
-                experience: formData.get('experience'),
-                message: formData.get('message')
-            };
-
             const response = await fetch(`${window.CONFIG.apiBaseUrl}/api/job-submit`, {
                 method: 'POST',
                 headers: {
