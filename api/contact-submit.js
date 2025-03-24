@@ -110,7 +110,7 @@ export default async function handler(req, res) {
             lastName: contactName.trim().split(/\s+/).slice(1).join(' ') || 'User',
             email: email,
             phone: phone,
-            cf_business_name: businessName
+            description: `Business Name: ${businessName}`
         };
 
         console.log('Creating/getting contact with data:', {
@@ -119,7 +119,7 @@ export default async function handler(req, res) {
             lastName: contactData.lastName,
             email: contactData.email,
             phone: contactData.phone,
-            businessName: contactData.cf_business_name
+            description: contactData.description
         });
         const contact = await getOrCreateContact(email, contactData);
         console.log('Contact result:', contact);
