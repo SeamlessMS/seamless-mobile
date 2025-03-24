@@ -58,8 +58,8 @@ async function testPayment(authToken) {
 
 async function main() {
   try {
-    // Test ticket submission
-    await testTicketSubmission();
+    // Commented out to prevent automatic test execution
+    // await testTicketSubmission();
 
     // Test authentication
     const token = await testAuthentication();

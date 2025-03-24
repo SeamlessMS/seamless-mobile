@@ -41,4 +41,5 @@ async function testTicketSubmission() {
 }
 
 console.log('Starting ticket submission test at:', new Date().toISOString());
-testTicketSubmission(); 
+// Commented out to prevent automatic test execution
+// testTicketSubmission(); 

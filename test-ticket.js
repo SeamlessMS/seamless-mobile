@@ -85,32 +85,6 @@ async function createTicket(accessToken, contactId, ticketData) {
     }
 }
 
-async function testTicketSubmission() {
-    try {
-        const response = await axios.post('https://www.seamlessms.net/api/submit-ticket', {
-            employeeName: 'Test User',
-            email: 'test@example.com',
-            phone: '123-456-7890',
-            serviceType: 'Technical',
-            followUpContact: 'John Doe',
-            issueDescription: 'Test ticket with custom fields',
-            priority: 'Medium'
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log('Test Response:', response.data);
-    } catch (error) {
-        console.error('Test Error:', {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status
-        });
-    }
-}
-
 async function test() {
     try {
         console.log('Starting Zoho Desk integration test...');
@@ -150,5 +124,5 @@ async function test() {
     }
 }
 
-test();
-testTicketSubmission();
+// Commented out to prevent automatic test execution
+// test();

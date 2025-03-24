@@ -99,14 +99,16 @@ async function testTicketSubmission(retryCount = 0, maxRetries = 3) {
         console.log('Sending request with data:', data);
         console.log('Content-Type:', 'application/json');
 
-        const response = await axios({
-            method: 'post',
-            url: 'https://seamless-mobile11.vercel.app/api/submit-ticket',
+        const response = await axios.post('https://seamless-mobile11.vercel.app/api/submit-ticket', data, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            data: data
+            transformRequest: [function (data) {
+                return JSON.stringify(data);
+            }],
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
         });
 
         console.log('Response:', response.data);
@@ -134,4 +136,5 @@ async function testTicketSubmission(retryCount = 0, maxRetries = 3) {
 
 // Add a delay before starting the test
 console.log('Waiting 5 seconds before starting test...');
-delay(5000).then(() => testTicketSubmission()); 
+// Commented out to prevent automatic test execution
+// delay(5000).then(() => testTicketSubmission()); 
