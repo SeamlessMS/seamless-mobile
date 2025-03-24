@@ -284,12 +284,12 @@
     <script>
         // Show popup after 3 seconds
         setTimeout(() => {
-            document.getElementById('rebrandPopup').style.display = 'flex';
+            document.getElementById('rebrandPopup').classList.add('active');
         }, 3000);
 
         // Close popup function
         function closeRebrandPopup() {
-            document.getElementById('rebrandPopup').style.display = 'none';
+            document.getElementById('rebrandPopup').classList.remove('active');
         }
 
         // Close popup when clicking outside
