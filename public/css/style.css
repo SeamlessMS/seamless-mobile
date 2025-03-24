@@ -556,4 +556,88 @@ footer .btn-primary {
 .btn-primary {
     padding: 0.5rem 2rem;
     font-weight: 500;
+}
+
+/* Success Stories Section */
+.success-stories {
+    background-color: var(--light-color);
+}
+
+.success-stories .card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.success-stories .card:hover {
+    transform: translateY(-5px);
+}
+
+.success-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    color: white;
+}
+
+.success-stats .badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Services Section */
+.services .card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.services .card:hover {
+    transform: translateY(-5px);
+}
+
+.service-icon-box {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    color: white;
+}
+
+.services .btn-outline-primary {
+    border-width: 2px;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.services .btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .success-stories .card,
+    .services .card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .success-stats {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .success-stats .badge {
+        margin-bottom: 0.5rem;
+    }
 } 

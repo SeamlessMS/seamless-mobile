@@ -1,26 +1,13 @@
 {
-  "name": "seamless-mobile-tests",
+  "name": "seamless-mobile",
   "version": "1.0.0",
-  "description": "Test suite for Seamless Mobile application",
+  "type": "module",
+  "description": "Seamless Mobile Services Website",
+  "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "node api/test-contact.js"
   },
   "dependencies": {
-    "axios": "1.6.7",
-    "canvas": "^3.1.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "stripe": "^14.18.0"
-  },
-  "devDependencies": {
-    "express": "^4.18.2",
-    "jest": "^29.7.0",
-    "jest-puppeteer": "^9.0.2",
-    "puppeteer": "^24.4.0"
-  },
-  "resolutions": {
-    "axios": "1.6.7"
+    "axios": "^1.6.7"
   }
 }
