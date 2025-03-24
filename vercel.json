@@ -15,6 +15,18 @@
   ],
   "routes": [
     {
+      "src": "/api/contact/submit",
+      "dest": "/api/contact-submit.js",
+      "methods": ["POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "X-RateLimit-Limit": "10",
+        "X-RateLimit-Window": "60"
+      }
+    },
+    {
       "src": "/api/payment/config",
       "dest": "/api/payment-config.js",
       "methods": ["GET", "OPTIONS"],
@@ -67,6 +79,18 @@
     {
       "src": "/ticket-submission.html",
       "dest": "/public/ticket-submission.html"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Type": "application/javascript; charset=utf-8"
+      }
+    },
+    {
+      "src": "/(.*)\\.html",
+      "dest": "/public/$1.html"
     },
     {
       "src": "/(.*)",
