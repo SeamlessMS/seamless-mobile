@@ -107,7 +107,7 @@ async function getAccessToken(retryCount = 0, maxRetries = 3) {
 }
 
 // Get or create contact function
-async function getOrCreateContact(email, contactData) {
+export async function getOrCreateContact(email, contactData) {
     try {
         const accessToken = await getAccessToken();
         if (!accessToken) {

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { createTicket, getOrCreateContact } from './submit-ticket.js';
 
 // Version number for deployment tracking
-const VERSION = '1.0.2';
+const VERSION = '1.0.1';
 
 // CORS headers
 const corsHeaders = {
@@ -86,59 +86,62 @@ export default async function handler(req, res) {
             return;
         }
 
-        const {
-            businessName,
-            address,
-            contactName,
-            email,
-            phone,
-            currentServices,
-            businessNeeds
-        } = req.body;
-
         // Validate required fields
+        const { businessName, contactName, email, phone } = req.body;
         if (!businessName || !contactName || !email || !phone) {
-            sendCorsResponse(res, 400, {
-                error: 'Missing required fields'
+            sendCorsResponse(res, 400, { 
+                error: 'Missing required fields',
+                details: {
+                    businessName: !businessName,
+                    contactName: !contactName,
+                    email: !email,
+                    phone: !phone
+                }
             });
             return;
         }
 
         // Create or get contact
         const contactData = {
-            firstName: contactName.trim().split(/\s+/)[0] || 'Unknown',
-            lastName: contactName.trim().split(/\s+/).slice(1).join(' ') || 'User',
+            firstName: contactName.split(' ')[0],
+            lastName: contactName.split(' ').slice(1).join(' '),
             email: email,
-            phone: phone
+            phone: phone,
+            cf_business_name: businessName
         };
 
+        console.log('Creating/getting contact with data:', contactData);
         const contact = await getOrCreateContact(email, contactData);
-        if (!contact || !contact.id) {
-            throw new Error('Failed to create or get contact');
-        }
+        console.log('Contact result:', contact);
 
-        // Create a ticket using the existing ticket creation logic
+        // Create ticket
         const ticketData = {
             employeeName: contactName,
             email: email,
             phone: phone,
-            serviceType: 'Contact Form',
-            followUpContact: businessName,
-            issueDescription: `Business Contact Request\n\nBusiness Name: ${businessName}\nAddress: ${address}\nContact Name: ${contactName}\nCurrent Services: ${currentServices}\nBusiness Needs: ${businessNeeds}`,
+            serviceType: 'General Inquiry',
+            issueDescription: `Business: ${businessName}\nContact: ${contactName}\nEmail: ${email}\nPhone: ${phone}`,
             priority: 'Medium'
         };
 
-        const result = await createTicket(contact.id, ticketData);
+        console.log('Creating ticket with data:', ticketData);
+        const ticket = await createTicket(contact.id, ticketData);
+        console.log('Ticket created:', ticket);
 
+        // Send success response
         sendCorsResponse(res, 200, {
             success: true,
-            message: 'Contact request submitted successfully',
-            ticketId: result.id
+            message: 'Contact form submitted successfully',
+            ticketId: ticket.id,
+            contactId: contact.id
         });
+
     } catch (error) {
         console.error('Error processing contact form submission:', error);
         sendCorsResponse(res, 500, {
-            error: 'Failed to process contact request'
+            error: 'Error processing contact form submission',
+            message: error.message,
+            details: error.response?.data || 'No additional details available'
         });
     }
 } 
