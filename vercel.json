@@ -51,6 +51,10 @@
       }
     },
     {
+      "src": "/api/job-submit",
+      "dest": "/api/job-submit.js"
+    },
+    {
       "src": "/js/ticket-submission.js",
       "dest": "/public/js/ticket-submission.js",
       "headers": {
