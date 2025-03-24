@@ -270,7 +270,7 @@
     <!-- Rebranding Popup -->
     <div class="rebrand-popup-overlay" id="rebrandPopup">
         <div class="rebrand-popup">
-            <img src="images/trout-logo.png" alt="Trout Mobile" class="rebrand-logo">
+            <img src="images/trout-logo.png" alt="Trout Mobile" class="rebrand-logo" style="max-width: 200px; margin-bottom: 20px;">
             <h2 class="rebrand-title">Trout Mobile is now Seamless Mobile Services</h2>
             <p class="rebrand-message">We're excited to announce our rebranding to Seamless Mobile Services. While our name has changed, our commitment to providing exceptional mobile device management solutions remains the same. Experience the same great service with our enhanced brand identity.</p>
             <button class="btn btn-primary rebrand-button" onclick="closeRebrandPopup()">Continue to Site</button>
@@ -281,7 +281,14 @@
     <script>
         // Show popup after 3 seconds
         setTimeout(() => {
-            document.getElementById('rebrandPopup').style.display = 'flex';
+            const popup = document.getElementById('rebrandPopup');
+            popup.style.display = 'flex';
+            // Ensure logo is loaded
+            const logo = popup.querySelector('.rebrand-logo');
+            logo.onerror = function() {
+                console.error('Error loading Trout logo');
+                this.style.display = 'none';
+            };
         }, 3000);
 
         // Close popup function
