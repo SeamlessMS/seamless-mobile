@@ -153,7 +153,7 @@ async function getOrCreateContact(email, contactData) {
 }
 
 // Create ticket function
-async function createTicket(contactId, ticketData) {
+export async function createTicket(contactId, ticketData) {
     try {
         const accessToken = await getAccessToken();
         if (!accessToken) {

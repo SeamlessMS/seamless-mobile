@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { createTicket } = require('./submit-ticket');
+const { createTicket, getOrCreateContact } = require('./submit-ticket');
 
 module.exports = async (req, res) => {
     // Handle CORS preflight requests
@@ -32,6 +32,19 @@ module.exports = async (req, res) => {
             return;
         }
 
+        // Create or get contact
+        const contactData = {
+            firstName: contactName.trim().split(/\s+/)[0] || 'Unknown',
+            lastName: contactName.trim().split(/\s+/).slice(1).join(' ') || 'User',
+            email: email,
+            phone: phone
+        };
+
+        const contact = await getOrCreateContact(email, contactData);
+        if (!contact || !contact.id) {
+            throw new Error('Failed to create or get contact');
+        }
+
         // Create a ticket using the existing ticket creation logic
         const ticketData = {
             employeeName: contactName,
@@ -43,12 +56,12 @@ module.exports = async (req, res) => {
             priority: 'Medium'
         };
 
-        const result = await createTicket(ticketData);
+        const result = await createTicket(contact.id, ticketData);
 
         res.status(200).json({
             success: true,
             message: 'Contact request submitted successfully',
-            ticketId: result.ticketId
+            ticketId: result.id
         });
     } catch (error) {
         console.error('Error processing contact form submission:', error);
